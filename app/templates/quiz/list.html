@@ -9,8 +9,13 @@
       <h1>My Quizzes</h1>
       <p>Manage quizzes you've created.</p>
     </div>
-    <div style="display:flex;gap:var(--sp-3);margin-left:auto;">
-      <a href="{{ url_for('quiz.ai_generate_page') }}" class="btn btn-secondary">✨ AI Generate</a>
+    <div style="display:flex;gap:var(--sp-3);align-items:center;margin-left:auto;">
+      <a href="{{ url_for('quiz.ai_generate_page') }}" class="btn btn-secondary">✨ AI Generate
+        <span style="display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;border-radius:var(--radius-full);font-size:var(--fs-xs);font-weight:800;margin-left:6px;padding:0 6px;
+          {% if ai_remaining > 3 %}background:rgba(16,185,129,.15);color:#10b981;
+          {% elif ai_remaining > 0 %}background:rgba(245,158,11,.15);color:#f59e0b;
+          {% else %}background:rgba(239,68,68,.15);color:#ef4444;{% endif %}">{{ ai_remaining }}/{{ ai_limit }}</span>
+      </a>
       <a href="{{ url_for('quiz.create_quiz') }}" class="btn btn-primary">+ Create New Quiz</a>
     </div>
   </div>

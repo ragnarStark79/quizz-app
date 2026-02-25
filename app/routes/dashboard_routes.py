@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, redirect, url_for
 from flask_login import login_required, current_user
 from app.models.quiz import Quiz
 from app.models.attempt import Attempt
+from app.services.ai_quiz_service import AIQuizService
 from app import db
 from sqlalchemy import func
 
@@ -33,8 +34,8 @@ def index():
     avg_accuracy = sum(a.accuracy for a in attempts) / total_attempts if total_attempts else 0
     best_score = max((a.accuracy for a in attempts), default=0)
 
-    # Recent 6 for score history chart
-    score_history = list(reversed(attempts[:6]))
+    # Recent 10 for score history chart
+    score_history = list(reversed(attempts[:10]))
     score_labels = [a.quiz.title[:12] + '…' if len(a.quiz.title) > 12 else a.quiz.title for a in score_history]
     score_values = [round(a.accuracy, 1) for a in score_history]
 
@@ -55,6 +56,11 @@ def index():
 
     recent_attempts = attempts[:5]
 
+    # AI usage
+    ai_used, ai_remaining = AIQuizService.get_daily_usage(current_user.id)
+    from flask import current_app
+    ai_limit = current_app.config.get('AI_DAILY_LIMIT', 6)
+
     return render_template('dashboard/index.html',
         quizzes=quizzes,
         quizzes_created=quizzes_created,
@@ -72,5 +78,8 @@ def index():
         total_qs=total_qs,
         attempt_counts=attempt_counts,
         recent_attempts=recent_attempts,
+        ai_remaining=ai_remaining,
+        ai_limit=ai_limit,
+        ai_used=ai_used,
     )
 

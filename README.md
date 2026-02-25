@@ -24,7 +24,7 @@
 
 ### 🎮 For Users
 - **Create Quizzes** — Build quizzes with multiple-choice questions, set time limits, categories, and difficulty levels
-- **✨ AI Quiz Generator** — Auto-generate structured quizzes in seconds using the **Google Gemini API** just by entering a topic!
+- **✨ AI Quiz Generator** — Auto-generate structured quizzes in seconds using the **Google Gemini API** with multi-model fallback and smart rotation!
 - **Take Quizzes** — Attempt quizzes from the explore page with a clean, distraction-free quiz interface
 - **Dashboard** — Personal dashboard with animated stat cards, score history charts, and accuracy breakdowns
 - **Leaderboard** — Global leaderboard to compete with other users and track rankings
@@ -51,6 +51,7 @@
 - **Quiz Management** — Monitor, review, and moderate quizzes across the platform
 - **Ticket Management** — Respond to and resolve user support tickets
 - **Activity Logs** — Track all important actions and events across the platform
+- **AI Usage Dashboard** — Monitor Gemini model calls, failures, fallback activity, and per-model success rates
 - **Admin Stats on Profile** — Admins see platform-wide stats (users, quizzes, activities, tickets) on their profile page
 
 ---
@@ -64,7 +65,7 @@
 | **Migrations** | [Flask-Migrate](https://flask-migrate.readthedocs.io/) (Alembic)          |
 | **Auth**       | [Flask-Login](https://flask-login.readthedocs.io/) — Session-based authentication |
 | **Google Auth**| [Firebase Admin SDK](https://firebase.google.com/docs/admin/setup) — Server-side token verification |
-| **AI Engine**  | [Google Gemini API](https://ai.google.dev/) (`google-genai`) — For auto-generating quizzes |
+| **AI Engine**  | [Google Gemini API](https://ai.google.dev/) (`google-genai`) — Multi-model fallback with round-robin rotation |
 | **Charts**     | [Chart.js 4.4](https://www.chartjs.org/) — Interactive dashboard charts    |
 | **Frontend**   | HTML5 + Vanilla CSS + JavaScript — Custom glassmorphism design system      |
 

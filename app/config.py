@@ -14,3 +14,14 @@ class Config:
     FIREBASE_AUTH_DOMAIN = os.environ.get('FIREBASE_AUTH_DOMAIN', '')
     FIREBASE_PROJECT_ID = os.environ.get('FIREBASE_PROJECT_ID', '')
     GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
+    GEMINI_MODELS = [
+        'gemini-2.5-flash',
+        'gemini-2.5-pro',
+        'gemini-1.5-flash',
+        'gemini-1.5-pro',
+    ]
+    GEMINI_FALLBACK_ENABLED = True
+    GEMINI_MAX_RETRIES = 3
+    GEMINI_TIMEOUT = 60          # seconds per API call
+    GEMINI_COOLDOWN_MINUTES = 5  # cooldown after rate-limit hit
+    AI_DAILY_LIMIT = 6           # max AI generations per user per day

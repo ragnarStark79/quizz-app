@@ -148,3 +148,41 @@ def tickets_page():
     status_filter = request.args.get('status', 'open')
     tickets = SupportService.get_all_tickets(status_filter=status_filter)
     return render_template('admin/tickets.html', tickets=tickets, current_filter=status_filter)
+
+
+@admin_bp.route('/ai-usage')
+@admin_required
+def ai_usage():
+    from app.models.ai_usage import AIModelUsage
+    from app.services.ai_quiz_service import AIQuizService
+    from datetime import date
+    from sqlalchemy import func
+
+    today = date.today()
+
+    # Today's per-model stats
+    today_stats = AIModelUsage.query.filter_by(date=today).order_by(AIModelUsage.model_name).all()
+
+    # All-time aggregates
+    all_time = db.session.query(
+        AIModelUsage.model_name,
+        func.sum(AIModelUsage.success_count).label('total_success'),
+        func.sum(AIModelUsage.failure_count).label('total_failure'),
+        func.max(AIModelUsage.last_failure_at).label('last_failure'),
+    ).group_by(AIModelUsage.model_name).all()
+
+    total_calls = sum(r.total_success + r.total_failure for r in all_time) if all_time else 0
+    total_failures = sum(r.total_failure for r in all_time) if all_time else 0
+    active_models = len([r for r in all_time if r.total_success and r.total_success > 0])
+
+    cooldowns = AIQuizService.get_cooldowns()
+
+    return render_template('admin/ai_usage.html',
+        today_stats=today_stats,
+        all_time=all_time,
+        total_calls=total_calls,
+        total_failures=total_failures,
+        active_models=active_models,
+        cooldowns=cooldowns,
+    )
+
