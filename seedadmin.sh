@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# seedadmin.sh – Wrapper to seed an admin into the Quizz app
+# seedadmin.sh – Wrapper to seed an admin into the QuizOasis app
 # Usage:
 #   chmod +x seedadmin.sh
 #   ./seedadmin.sh

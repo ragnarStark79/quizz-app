@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">🧠 Quizz</h1>
+  <h1 align="center">🧠 QuizOasis</h1>
   <p align="center">
     <strong>The Modern Interactive Quiz Platform</strong>
   </p>
@@ -70,7 +70,7 @@
 ## 📁 Project Structure
 
 ```
-Quizz/
+QuizOasis/
 ├── app/
 │   ├── __init__.py            # App factory & extension init
 │   ├── config.py              # Configuration settings

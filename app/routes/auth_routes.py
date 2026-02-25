@@ -125,7 +125,7 @@ def register():
         if user:
             login_user(user)
             ActivityService.log_activity(user.id, 'Registered', 'Account created successfully')
-            flash('Registration successful! Welcome to Quizz.', 'success')
+            flash('Registration successful! Welcome to QuizOasis.', 'success')
             return redirect(url_for('dashboard.index'))
         else:
             flash(error, 'error')
