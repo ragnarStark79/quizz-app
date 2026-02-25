@@ -31,7 +31,7 @@ instance/
 # ──────────────────────────────────────
 *firebase*.json
 *serviceAccount*.json
-
+quizz-94388-firebase-adminsdk-fbsvc-1dd7df1a54.json
 # ──────────────────────────────────────
 # IDE / Editor
 # ──────────────────────────────────────
@@ -61,3 +61,19 @@ Planning/
 # ──────────────────────────────────────
 app/static/uploads/*
 !app/static/uploads/.gitkeep
+
+# ──────────────────────────────────────
+# Security & Common Caches (Added broadly)
+# ──────────────────────────────────────
+*.pem
+*.key
+*.cert
+secrets.json
+.env.*
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+node_modules/
+npm-debug.log
+yarn-error.log

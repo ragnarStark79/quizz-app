@@ -10,3 +10,6 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = os.path.join(basedir, 'static', 'uploads')
     MAX_CONTENT_LENGTH = 2 * 1024 * 1024  # 2MB
+    FIREBASE_API_KEY = os.environ.get('FIREBASE_API_KEY', '')
+    FIREBASE_AUTH_DOMAIN = os.environ.get('FIREBASE_AUTH_DOMAIN', '')
+    FIREBASE_PROJECT_ID = os.environ.get('FIREBASE_PROJECT_ID', '')
