@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-seedadmin.py – Create or promote an admin user for the Quizz application.
+seedadmin.py – Create or promote an admin user for the QuizOasis application.
 
 Usage:
     python seedadmin.py
@@ -49,7 +49,7 @@ def seed_admin(username: str, email: str, password: str) -> None:
                 print(f"🎉  Created new admin user '{username}' ({email})")
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='Seed an admin user into the Quizz database.')
+    parser = argparse.ArgumentParser(description='Seed an admin user into the QuizOasis database.')
     parser.add_argument('--username', default='admin',        help='Admin username (default: admin)')
     parser.add_argument('--email',    default='admin@quizz.app', help='Admin email')
     parser.add_argument('--password', default='Admin@12345',  help='Admin password')

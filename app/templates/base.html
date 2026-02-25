@@ -4,9 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Quizz App{% endblock %}</title>
+    <title>{% block title %}QuizOasis{% endblock %}</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
         rel="stylesheet">
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/favicon.png') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     {% block head %}{% endblock %}
 </head>
@@ -15,7 +16,11 @@
 
     <!-- Navbar -->
     <nav class="navbar">
-        <a href="/" class="nav-brand">Quizz</a>
+        <a href="/" class="nav-brand">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" alt="QuizOasis Logo"
+                style="height: 32px; width: auto; margin-right: 8px;">
+            QuizOasis
+        </a>
 
         <!-- Hamburger -->
         <div class="nav-toggle" id="navToggle" onclick="toggleNav()">
@@ -83,7 +88,11 @@
     <footer class="footer">
         <div class="footer-inner">
             <div>
-                <div class="footer-brand">Quizz</div>
+                <div class="footer-brand">
+                    <img src="{{ url_for('static', filename='images/logo.png') }}" alt="QuizOasis Logo"
+                        style="height: 24px; width: auto; margin-right: 6px; vertical-align: bottom;">
+                    QuizOasis
+                </div>
                 <p class="footer-text">The modern quiz platform for learners and creators.</p>
             </div>
             <div style="display:flex;gap:3rem;flex-wrap:wrap;">
@@ -110,7 +119,7 @@
             </div>
         </div>
         <div class="footer-bottom">
-            <span>&copy; 2026 Quizz App. All rights reserved.</span>
+            <span>&copy; 2026 QuizOasis. All rights reserved.</span>
             <span style="color:var(--primary);font-weight:600;">Built with ❤️</span>
         </div>
     </footer>
