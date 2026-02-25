@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard – Quizz{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+
+  <!-- Skeleton -->
+  <div id="skelAdmin">
+    <div class="skeleton" style="width:200px;height:28px;margin-bottom:var(--sp-2);"></div>
+    <div class="skeleton" style="width:300px;height:14px;margin-bottom:var(--sp-8);"></div>
+    <div class="grid grid-4 gap-4 mb-8">
+      {% for i in range(4) %}<div class="skeleton" style="height:110px;border-radius:var(--radius-lg);"></div>{% endfor
+      %}
+    </div>
+    <div class="grid grid-2 gap-6">
+      <div class="skeleton" style="height:200px;border-radius:var(--radius-xl);"></div>
+      <div class="skeleton" style="height:200px;border-radius:var(--radius-xl);"></div>
+    </div>
+  </div>
+
+  <div id="realAdmin" style="display:none;">
+
+    <!-- Header -->
+    <div class="page-header anim-fade">
+      <div class="page-header-icon" style="background:linear-gradient(135deg,var(--primary),#8b5cf6);">🛡️</div>
+      <div>
+        <h1>Admin Dashboard</h1>
+        <p>Platform overview and quick management.</p>
+      </div>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}{% for cat, msg in messages %}
+    <div class="alert alert-{{ cat }} mb-4">{{ msg }}</div>
+    {% endfor %}{% endif %}{% endwith %}
+
+    <!-- Stat cards -->
+    <div class="grid grid-4 gap-4 mb-8">
+      <div class="stat-card anim-slide anim-stagger" style="--i:0;">
+        <div class="stat-card-icon" style="background:var(--primary-light);color:var(--primary);">👥</div>
+        <div class="stat-card-value">{{ total_users }}</div>
+        <div class="stat-card-label">Total Users</div>
+      </div>
+      <div class="stat-card anim-slide anim-stagger" style="--i:1;">
+        <div class="stat-card-icon" style="background:rgba(14,165,233,.1);color:var(--info);">📝</div>
+        <div class="stat-card-value">{{ total_quizzes }}</div>
+        <div class="stat-card-label">Total Quizzes</div>
+      </div>
+      <div class="stat-card anim-slide anim-stagger" style="--i:2;">
+        <div class="stat-card-icon" style="background:var(--success-light);color:var(--success);">🎮</div>
+        <div class="stat-card-value">{{ total_attempts }}</div>
+        <div class="stat-card-label">Total Attempts</div>
+      </div>
+      <div class="stat-card anim-slide anim-stagger" style="--i:3;">
+        <div class="stat-card-icon" style="background:var(--error-light);color:var(--error);">🚨</div>
+        <div class="stat-card-value">{{ open_tickets }}</div>
+        <div class="stat-card-label">Open Tickets</div>
+      </div>
+    </div>
+
+    <!-- Quick panels -->
+    <div class="grid grid-2 gap-6 mb-8">
+
+      <!-- Recent users -->
+      <div class="card anim-slide anim-stagger" style="--i:4;">
+        <div style="padding:var(--sp-5) var(--sp-6);border-bottom:1px solid var(--border-light);">
+          <div class="flex items-center justify-between">
+            <h3 style="margin:0;font-size:var(--fs-md);">👥 Recent Users</h3>
+            <a href="{{ url_for('admin.users_page') }}" style="font-size:var(--fs-sm);font-weight:600;">View all →</a>
+          </div>
+        </div>
+        {% for user in users[:5] %}
+        <div
+          style="padding:var(--sp-3) var(--sp-6);border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:var(--sp-3);">
+          <div class="avatar avatar-sm">{{ user.username[0]|upper }}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:600;font-size:var(--fs-sm);color:var(--text-primary);">{{ user.username }}</div>
+            <div style="font-size:var(--fs-xs);color:var(--text-faint);">{{ user.email }}</div>
+          </div>
+          {% if user.is_admin %}<span class="badge badge-success">Admin</span>
+          {% else %}<span class="badge badge-neutral">User</span>{% endif %}
+        </div>
+        {% endfor %}
+      </div>
+
+      <!-- Open tickets -->
+      <div class="card anim-slide anim-stagger" style="--i:5;">
+        <div style="padding:var(--sp-5) var(--sp-6);border-bottom:1px solid var(--border-light);">
+          <div class="flex items-center justify-between">
+            <h3 style="margin:0;font-size:var(--fs-md);">🎫 Open Tickets</h3>
+            <a href="{{ url_for('admin.tickets_page') }}" style="font-size:var(--fs-sm);font-weight:600;">View all →</a>
+          </div>
+        </div>
+        {% if open_ticket_list %}
+        {% for ticket in open_ticket_list[:5] %}
+        <div
+          style="padding:var(--sp-3) var(--sp-6);border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:var(--sp-3);">
+          <div
+            style="width:8px;height:8px;border-radius:50%;background:var(--success);flex-shrink:0;box-shadow:0 0 0 3px rgba(16,185,129,.2);">
+          </div>
+          <div style="flex:1;min-width:0;">
+            <a href="{{ url_for('support.view_ticket', ticket_id=ticket.id) }}"
+              style="font-weight:600;font-size:var(--fs-sm);color:var(--text-primary);">{{ ticket.subject }}</a>
+            <div style="font-size:var(--fs-xs);color:var(--text-faint);">{{ ticket.user.username }} · {{
+              ticket.created_at.strftime('%b %d') }}</div>
+          </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="text-center" style="padding:var(--sp-8);color:var(--text-faint);">✅ No open tickets!</div>
+        {% endif %}
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  setTimeout(() => {
+    document.getElementById('skelAdmin').style.display = 'none';
+    document.getElementById('realAdmin').style.display = 'block';
+  }, 1000);
+</script>
+{% endblock %}

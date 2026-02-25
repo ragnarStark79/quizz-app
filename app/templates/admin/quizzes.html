@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}Quiz Management – Admin{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+  <div id="skelQ">
+    <div class="skeleton" style="width:200px;height:28px;margin-bottom:var(--sp-8);"></div>
+    {% for i in range(5) %}
+    <div
+      style="display:flex;align-items:center;gap:var(--sp-4);padding:var(--sp-3) 0;border-bottom:1px solid var(--border-light);">
+      <div class="skeleton" style="width:200px;height:14px;"></div>
+      <div class="skeleton" style="width:60px;height:22px;border-radius:20px;margin-left:auto;"></div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div id="realQ" style="display:none;">
+    <div class="page-header anim-fade">
+      <div class="page-header-icon" style="background:linear-gradient(135deg,#0ea5e9,var(--primary));">📝</div>
+      <div>
+        <h1>Quiz Management</h1>
+        <p>Monitor, suspend, or restore all platform quizzes.</p>
+      </div>
+      <a href="{{ url_for('admin.index') }}" class="btn btn-secondary" style="margin-left:auto;">← Back</a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}{% for cat, msg in messages %}
+    <div class="alert alert-{{ cat }} mb-4">{{ msg }}</div>
+    {% endfor %}{% endif %}{% endwith %}
+
+    <div class="table-wrap">
+      <div class="table-toolbar">
+        <span class="table-title">{{ quizzes|length }} Quizzes</span>
+        <input type="text" class="search-input" id="qSearch" placeholder="Search quizzes…" oninput="filterQ()">
+      </div>
+      <table class="premium-table">
+        <thead>
+          <tr>
+            <th>Quiz</th>
+            <th>Creator</th>
+            <th>Status</th>
+            <th>Qs</th>
+            <th>Plays</th>
+            <th style="text-align:right;">Action</th>
+          </tr>
+        </thead>
+        <tbody id="qBody">
+          {% for quiz in quizzes %}
+          <tr data-t="{{ quiz.title|lower }}" data-c="{{ quiz.creator.username|lower }}">
+            <td>
+              <div style="font-weight:700;color:var(--text-primary);">{{ quiz.title }}</div>
+              <div style="font-size:var(--fs-xs);color:var(--text-faint);">{{ quiz.created_at.strftime('%b %d, %Y') }}
+              </div>
+            </td>
+            <td style="font-weight:600;">{{ quiz.creator.username }}</td>
+            <td>
+              {% if quiz.status == 'active' %}<span class="badge badge-success">Active</span>
+              {% elif quiz.status == 'suspended' %}<span class="badge badge-danger">Suspended</span>
+              {% elif quiz.status == 'scheduled' %}<span class="badge badge-info">Scheduled</span>
+              {% elif quiz.status == 'closed' %}<span class="badge badge-warning">Closed</span>
+              {% else %}<span class="badge badge-neutral">{{ quiz.status|title }}</span>{% endif %}
+            </td>
+            <td><span class="badge badge-neutral">{{ quiz.questions.count() }}</span></td>
+            <td><span class="badge badge-neutral">{{ quiz.attempts.count() }}</span></td>
+            <td style="text-align:right;">
+              <form method="POST" action="{{ url_for('admin.toggle_quiz_status', quiz_id=quiz.id) }}"
+                style="display:inline;"
+                onsubmit="return confirm('{{ 'Restore' if quiz.status == 'suspended' else 'Suspend' }} this quiz?');">
+                <button type="submit"
+                  class="btn btn-sm {{ 'btn-success' if quiz.status == 'suspended' else 'btn-danger' }}">{{ 'Restore' if
+                  quiz.status == 'suspended' else 'Suspend' }}</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script>
+  setTimeout(() => { document.getElementById('skelQ').style.display = 'none'; document.getElementById('realQ').style.display = 'block'; }, 1000);
+  function filterQ() {
+    const q = document.getElementById('qSearch').value.toLowerCase();
+    document.querySelectorAll('#qBody tr').forEach(r => { r.style.display = ((r.dataset.t || '') + (r.dataset.c || '')).includes(q) ? '' : 'none'; });
+  }
+</script>
+{% endblock %}

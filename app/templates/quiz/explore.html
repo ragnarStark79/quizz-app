@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block title %}Explore Quizzes – Quizz{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+  <!-- Header -->
+  <div class="text-center mb-8 anim-fade">
+    <h1 style="font-size:var(--fs-3xl);margin-bottom:var(--sp-2);">
+      <span
+        style="background:linear-gradient(135deg,var(--primary),#8b5cf6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">Explore
+        Quizzes</span>
+    </h1>
+    <p class="text-muted" style="max-width:480px;margin:0 auto;font-size:var(--fs-base);">Discover public quizzes to
+      test your knowledge and compete.</p>
+  </div>
+
+  <!-- Search/filter bar -->
+  <div class="glass-card-static mb-8 anim-slide" style="padding:var(--sp-4) var(--sp-6);">
+    <form method="GET" action="{{ url_for('quiz.explore_quizzes') }}" class="flex items-center gap-3"
+      style="flex-wrap:wrap;">
+      <input type="text" name="q" value="{{ search_query }}" placeholder="Search quizzes…" class="form-control"
+        style="flex:1;min-width:200px;">
+      <select name="status" class="form-control" style="width:auto;">
+        <option value="active" {% if current_status=='active' %}selected{% endif %}>Active</option>
+        <option value="scheduled" {% if current_status=='scheduled' %}selected{% endif %}>Scheduled</option>
+        <option value="closed" {% if current_status=='closed' %}selected{% endif %}>Closed</option>
+        <option value="all" {% if current_status=='all' %}selected{% endif %}>All Visible</option>
+      </select>
+      <select name="sort" class="form-control" style="width:auto;">
+        <option value="newest" {% if current_sort=='newest' %}selected{% endif %}>Newest</option>
+        <option value="popular" {% if current_sort=='popular' %}selected{% endif %}>Popular</option>
+      </select>
+      <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+  </div>
+
+  <!-- Quiz cards -->
+  {% if quizzes %}
+  <div class="grid gap-6" style="grid-template-columns:repeat(auto-fill,minmax(320px,1fr));">
+    {% for quiz in quizzes %}
+    <div class="glass-card anim-slide anim-stagger"
+      style="--i:{{ loop.index0 }};display:flex;flex-direction:column;justify-content:space-between;min-height:260px;">
+      <div>
+        <h3 style="margin:0 0 var(--sp-3);font-size:var(--fs-lg);line-height:1.3;">{{ quiz.title }}</h3>
+        <div class="flex gap-2 mb-4" style="flex-wrap:wrap;">
+          <span class="badge badge-primary">{{ quiz.questions.count() }} Questions</span>
+          {% if quiz.time_limit %}<span class="badge badge-danger">{{ quiz.time_limit }} min</span>{% endif %}
+        </div>
+
+        {# ── Always show timing info ── #}
+        <div
+          style="font-size:var(--fs-xs);color:var(--text-secondary);margin-bottom:var(--sp-3);background:rgba(0,0,0,.02);padding:var(--sp-2) var(--sp-3);border-radius:var(--radius-sm);">
+          {% if quiz.start_time or quiz.end_time %}
+          {% if quiz.start_time %}<div>⏳ Starts: <strong>{{ quiz.start_time.strftime('%b %d, %Y %I:%M %p') }}</strong>
+          </div>{% endif %}
+          {% if quiz.end_time %}<div>⌛ Ends: <strong>{{ quiz.end_time.strftime('%b %d, %Y %I:%M %p') }}</strong></div>{%
+          endif %}
+          {% else %}
+          <div>📅 Created: <strong>{{ quiz.created_at.strftime('%b %d, %Y %I:%M %p') }}</strong></div>
+          {% endif %}
+        </div>
+
+        <p style="font-size:var(--fs-sm);color:var(--text-muted);margin-bottom:var(--sp-4);line-height:1.5;">
+          {{ quiz.description[:120] }}{% if quiz.description and quiz.description|length > 120 %}…{% endif %}
+        </p>
+      </div>
+      <div>
+        <div class="flex items-center gap-3 mb-4">
+          <div class="avatar avatar-sm">{{ quiz.creator.username[0]|upper }}</div>
+          <span style="font-size:var(--fs-sm);font-weight:500;color:var(--text-secondary);">{{ quiz.creator.username
+            }}</span>
+        </div>
+
+        {# ── Action area: uses client-side JS for scheduled quizzes ── #}
+        {% if current_user.is_authenticated and current_user.id == quiz.creator_id %}
+        <div
+          style="background:var(--error-light);color:#991b1b;padding:var(--sp-3);text-align:center;border-radius:var(--radius-sm);font-weight:600;font-size:var(--fs-sm);border:1px dashed rgba(153,27,27,.2);">
+          Created by You</div>
+
+        {% elif current_user.is_authenticated and user_attempts.get(quiz.id, 0) >= 3 %}
+        <div
+          style="background:var(--error-light);color:#991b1b;padding:var(--sp-3);text-align:center;border-radius:var(--radius-sm);font-weight:600;font-size:var(--fs-sm);border:1px dashed rgba(153,27,27,.2);">
+          All attempts exceeded</div>
+
+        {% elif quiz.end_time and now > quiz.end_time %}
+        <div
+          style="background:rgba(0,0,0,.03);color:var(--text-muted);padding:var(--sp-3);text-align:center;border-radius:var(--radius-sm);font-weight:600;font-size:var(--fs-sm);">
+          Quiz Ended</div>
+
+        {% elif quiz.start_time %}
+        {# Always render the container — JS will decide countdown vs button #}
+        <div class="scheduled-quiz-container" data-start-time="{{ quiz.start_time.isoformat() }}">
+          <div class="countdown-info"
+            style="background:rgba(0,0,0,.03);color:var(--text-muted);padding:var(--sp-3);text-align:center;border-radius:var(--radius-sm);font-weight:600;font-size:var(--fs-sm);">
+            Starts in: <span class="countdown-display">Calculating…</span>
+          </div>
+          <form action="{{ url_for('attempt.start', quiz_id=quiz.id) }}" method="POST" class="start-form"
+            style="display:none;margin-top:var(--sp-3);">
+            <button type="submit" class="btn btn-primary btn-block">Start Challenge</button>
+          </form>
+        </div>
+
+        {% else %}
+        <form action="{{ url_for('attempt.start', quiz_id=quiz.id) }}" method="POST">
+          <button type="submit" class="btn btn-primary btn-block">Start Challenge</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="glass-card text-center anim-fade" style="padding:var(--sp-16);max-width:500px;margin:0 auto;">
+    <div style="font-size:3rem;margin-bottom:var(--sp-3);">🔍</div>
+    <h3 style="margin-bottom:var(--sp-2);">No Quizzes Found</h3>
+    <p class="text-muted mb-6">No public quizzes match your criteria. Create the first one!</p>
+    {% if current_user.is_authenticated %}
+    <a href="{{ url_for('quiz.create_quiz') }}" class="btn btn-primary">Create a Quiz</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const containers = document.querySelectorAll('.scheduled-quiz-container');
+
+    function updateCountdowns() {
+      const now = new Date().getTime();
+      containers.forEach(c => {
+        const startTime = new Date(c.dataset.startTime).getTime();
+        const countdownInfo = c.querySelector('.countdown-info');
+        const countdownDisplay = c.querySelector('.countdown-display');
+        const form = c.querySelector('.start-form');
+        const dist = startTime - now;
+
+        if (dist <= 0) {
+          // Time reached → hide countdown, show Start button
+          countdownInfo.style.display = 'none';
+          form.style.display = 'block';
+        } else {
+          // Still waiting → show countdown, hide Start button
+          countdownInfo.style.display = '';
+          form.style.display = 'none';
+          const d = Math.floor(dist / 864e5);
+          const h = Math.floor((dist % 864e5) / 36e5);
+          const m = Math.floor((dist % 36e5) / 6e4);
+          const s = Math.floor((dist % 6e4) / 1e3);
+          countdownDisplay.textContent = (d > 0 ? d + 'd ' : '') + (h > 0 || d > 0 ? h + 'h ' : '') + m + 'm ' + s + 's';
+        }
+      });
+    }
+
+    if (containers.length) {
+      updateCountdowns();
+      setInterval(updateCountdowns, 1000);
+    }
+  });
+</script>
+{% endblock %}

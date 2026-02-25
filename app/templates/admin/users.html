@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}User Management – Admin{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+  <div id="skelUsers">
+    <div class="skeleton" style="width:200px;height:28px;margin-bottom:var(--sp-8);"></div>
+    {% for i in range(6) %}
+    <div
+      style="display:flex;align-items:center;gap:var(--sp-4);padding:var(--sp-3) 0;border-bottom:1px solid var(--border-light);">
+      <div class="skeleton" style="width:36px;height:36px;border-radius:50%;"></div>
+      <div class="skeleton" style="width:140px;height:14px;"></div>
+      <div class="skeleton" style="width:56px;height:22px;border-radius:20px;margin-left:auto;"></div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div id="realUsers" style="display:none;">
+    <div class="page-header anim-fade">
+      <div class="page-header-icon" style="background:linear-gradient(135deg,var(--primary),#8b5cf6);">👥</div>
+      <div>
+        <h1>User Management</h1>
+        <p>View, suspend, or reactivate platform users.</p>
+      </div>
+      <a href="{{ url_for('admin.index') }}" class="btn btn-secondary" style="margin-left:auto;">← Back</a>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}{% for cat, msg in messages %}
+    <div class="alert alert-{{ cat }} mb-4">{{ msg }}</div>
+    {% endfor %}{% endif %}{% endwith %}
+
+    <div class="table-wrap">
+      <div class="table-toolbar">
+        <span class="table-title">{{ users|length }} Users</span>
+        <input type="text" class="search-input" id="userSearch" placeholder="Search users…" oninput="filterRows()">
+      </div>
+      <table class="premium-table">
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Role</th>
+            <th>Status</th>
+            <th>Joined</th>
+            <th style="text-align:right;">Action</th>
+          </tr>
+        </thead>
+        <tbody id="tBody">
+          {% for user in users %}
+          <tr data-name="{{ user.username|lower }}" data-email="{{ user.email|lower }}">
+            <td>
+              <div class="flex items-center gap-3">
+                <div class="avatar avatar-sm">{{ user.username[0]|upper }}</div>
+                <div>
+                  <a href="{{ url_for('admin.user_detail', user_id=user.id) }}"
+                    style="font-weight:700;color:var(--primary);">{{ user.username }}</a>
+                  <div style="font-size:var(--fs-xs);color:var(--text-faint);">{{ user.email }}</div>
+                </div>
+              </div>
+            </td>
+            <td>{% if user.is_admin %}<span class="badge badge-success">Admin</span>{% else %}<span
+                class="badge badge-neutral">User</span>{% endif %}</td>
+            <td>{% if user.is_suspended %}<span class="badge badge-danger">Suspended</span>{% else %}<span
+                class="badge badge-success">Active</span>{% endif %}</td>
+            <td style="font-size:var(--fs-xs);color:var(--text-faint);">{{ user.joined_at.strftime('%b %d, %Y') }}</td>
+            <td style="text-align:right;">
+              {% if user.id != current_user.id %}
+              <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=user.id) }}"
+                style="display:inline;"
+                onsubmit="return confirm('{{ 'Reactivate' if user.is_suspended else 'Suspend' }} {{ user.username }}?');">
+                <button type="submit" class="btn btn-sm {{ 'btn-success' if user.is_suspended else 'btn-danger' }}">{{
+                  'Reactivate' if user.is_suspended else 'Suspend' }}</button>
+              </form>
+              {% else %}<span class="text-faint" style="font-size:var(--fs-xs);font-style:italic;">You</span>{% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script>
+  setTimeout(() => { document.getElementById('skelUsers').style.display = 'none'; document.getElementById('realUsers').style.display = 'block'; }, 1000);
+  function filterRows() {
+    const q = document.getElementById('userSearch').value.toLowerCase();
+    document.querySelectorAll('#tBody tr').forEach(r => { r.style.display = ((r.dataset.name || '') + (r.dataset.email || '')).includes(q) ? '' : 'none'; });
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}{{ user.username }} – Admin{% endblock %}
+
+{% block content %}
+<div class="page-shell" style="max-width:var(--max-w-lg);">
+
+  <div class="page-header anim-fade">
+    <div class="avatar avatar-lg"
+      style="width:72px;height:72px;font-size:var(--fs-2xl);{% if user.is_admin %}background:linear-gradient(135deg,var(--success),#0ea5e9);{% endif %}">
+      {{ user.username[0]|upper }}</div>
+    <div style="flex:1;">
+      <h1 style="margin:0;">{{ user.username }}</h1>
+      <p style="margin:2px 0 var(--sp-2);font-size:var(--fs-sm);color:var(--text-faint);">{{ user.email }} · Joined {{
+        user.joined_at.strftime('%b %Y') }}</p>
+      <div class="flex gap-2">
+        {% if user.is_admin %}<span class="badge badge-success">Admin</span>{% else %}<span
+          class="badge badge-neutral">User</span>{% endif %}
+        {% if user.is_suspended %}<span class="badge badge-danger">Suspended</span>{% else %}<span
+          class="badge badge-success">Active</span>{% endif %}
+      </div>
+    </div>
+    <div class="flex gap-3" style="align-items:center;">
+      {% if user.id != current_user.id %}
+      <form method="POST" action="{{ url_for('admin.toggle_user_status', user_id=user.id) }}">
+        <button type="submit" class="btn {{ 'btn-success' if user.is_suspended else 'btn-danger' }}"
+          onclick="return confirm('{{ 'Reactivate' if user.is_suspended else 'Suspend' }} this user?');">
+          {{ 'Reactivate' if user.is_suspended else 'Suspend' }}
+        </button>
+      </form>
+      {% endif %}
+      <a href="{{ url_for('admin.users_page') }}" class="btn btn-secondary">← Back</a>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-4 gap-4 mb-8">
+    <div class="stat-card anim-slide anim-stagger" style="--i:0;">
+      <div class="stat-card-value">{{ total_quizzes }}</div>
+      <div class="stat-card-label">Quizzes Created</div>
+    </div>
+    <div class="stat-card anim-slide anim-stagger" style="--i:1;">
+      <div class="stat-card-value">{{ active_quizzes }}</div>
+      <div class="stat-card-label">Active Quizzes</div>
+    </div>
+    <div class="stat-card anim-slide anim-stagger" style="--i:2;">
+      <div class="stat-card-value" style="color:var(--primary);">{{ total_attempts }}</div>
+      <div class="stat-card-label">Attempts</div>
+    </div>
+    <div class="stat-card anim-slide anim-stagger" style="--i:3;">
+      <div class="stat-card-value" style="color:var(--success);">{{ "%.1f"|format(avg_accuracy) }}%</div>
+      <div class="stat-card-label">Avg Accuracy</div>
+    </div>
+  </div>
+
+  <!-- Recent attempts -->
+  <div class="card anim-slide" style="--i:4;">
+    <div style="padding:var(--sp-5) var(--sp-6);border-bottom:1px solid var(--border-light);">
+      <h3 style="margin:0;font-size:var(--fs-md);">🎮 Recent Attempts</h3>
+    </div>
+    {% if recent_attempts %}
+    {% for attempt in recent_attempts %}
+    <div
+      style="display:flex;align-items:center;justify-content:space-between;padding:var(--sp-4) var(--sp-6);border-bottom:1px solid var(--border-light);">
+      <div>
+        <div style="font-weight:700;color:var(--text-primary);font-size:var(--fs-sm);">{{ attempt.quiz.title }}</div>
+        <div style="font-size:var(--fs-xs);color:var(--text-faint);">{{ attempt.submitted_at.strftime('%b %d, %Y %H:%M')
+          }}</div>
+      </div>
+      <div
+        style="font-size:var(--fs-xl);font-weight:800;color:{% if attempt.accuracy > 75 %}var(--success){% elif attempt.accuracy > 40 %}var(--primary){% else %}var(--error){% endif %};">
+        {{ "%.0f"|format(attempt.accuracy) }}%
+      </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="text-center" style="padding:var(--sp-8);color:var(--text-faint);">No attempts recorded yet.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

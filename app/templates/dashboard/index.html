@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+{% block title %}Dashboard – Quizz{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+
+  <!-- Skeleton overlay -->
+  <div id="skelDash">
+    <div style="display:flex;align-items:center;gap:var(--sp-4);margin-bottom:var(--sp-8);">
+      <div class="skeleton" style="width:52px;height:52px;border-radius:var(--radius-full);"></div>
+      <div>
+        <div class="skeleton" style="width:180px;height:20px;margin-bottom:6px;"></div>
+        <div class="skeleton" style="width:120px;height:14px;"></div>
+      </div>
+    </div>
+    <div class="grid grid-4 gap-4 mb-8">
+      {% for i in range(4) %}<div class="skeleton" style="height:110px;border-radius:var(--radius-lg);"></div>{% endfor %}
+    </div>
+    <div class="grid grid-2 gap-6">
+      <div class="skeleton" style="height:260px;border-radius:var(--radius-xl);"></div>
+      <div class="skeleton" style="height:260px;border-radius:var(--radius-xl);"></div>
+    </div>
+  </div>
+
+  <!-- Real content -->
+  <div id="realDash" style="display:none;">
+
+    <!-- Welcome header -->
+    <div class="flex items-center gap-4 mb-8 anim-fade" style="flex-wrap:wrap;">
+      <div class="avatar avatar-lg">{{ current_user.username[0]|upper }}</div>
+      <div style="flex:1;">
+        <p class="text-muted"
+          style="font-size:var(--fs-xs);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">
+          Welcome back</p>
+        <h1 style="font-size:var(--fs-2xl);margin:0;">{{ current_user.username }}!</h1>
+        <p class="text-faint" style="font-size:var(--fs-sm);margin-top:2px;">{{ current_user.email }}</p>
+      </div>
+      <a href="{{ url_for('quiz.create_quiz') }}" class="btn btn-primary">+ Create Quiz</a>
+    </div>
+
+    <!-- Stat cards -->
+    <div class="grid grid-4 gap-4 mb-8">
+      <div class="stat-card anim-slide anim-stagger" style="--i:0;">
+        <div class="stat-card-icon" style="background:var(--primary-light);color:var(--primary);">🎮</div>
+        <div class="stat-card-value" data-count="{{ total_attempts }}">0</div>
+        <div class="stat-card-label">Quizzes Played</div>
+      </div>
+      <div class="stat-card anim-slide anim-stagger" style="--i:1;">
+        <div class="stat-card-icon" style="background:var(--success-light);color:var(--success);">🎯</div>
+        <div class="stat-card-value" data-count="{{ avg_accuracy|round|int }}">0</div>
+        <div class="stat-card-label">Avg Accuracy %</div>
+      </div>
+      <div class="stat-card anim-slide anim-stagger" style="--i:2;">
+        <div class="stat-card-icon" style="background:var(--warning-light);color:var(--warning);">🏆</div>
+        <div class="stat-card-value" data-count="{{ best_score|round|int }}">0</div>
+        <div class="stat-card-label">Best Score %</div>
+      </div>
+      <div class="stat-card anim-slide anim-stagger" style="--i:3;">
+        <div class="stat-card-icon" style="background:rgba(14,165,233,.1);color:var(--info);">📝</div>
+        <div class="stat-card-value" data-count="{{ quizzes_created }}">0</div>
+        <div class="stat-card-label">Quizzes Created</div>
+      </div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="grid gap-6 mb-8" style="grid-template-columns:1.6fr 1fr;">
+      <!-- Score History -->
+      <div class="card" style="padding:var(--sp-6);">
+        <div class="flex items-center justify-between mb-4">
+          <h3 style="font-size:var(--fs-md);margin:0;">📊 Score History</h3>
+          <span class="badge badge-neutral">{{ total_attempts }} attempts</span>
+        </div>
+        {% if score_values %}
+        <canvas id="scoreChart" height="160"></canvas>
+        {% else %}
+        <div class="text-center" style="padding:var(--sp-10);color:var(--text-faint);">
+          <div style="font-size:2rem;margin-bottom:var(--sp-2);">🎮</div>
+          <p>No attempts yet</p>
+          <a href="{{ url_for('quiz.explore_quizzes') }}" class="btn btn-primary btn-sm mt-4">Explore Quizzes</a>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Accuracy breakdown -->
+      <div class="card" style="padding:var(--sp-6);">
+        <h3 style="font-size:var(--fs-md);margin:0 0 var(--sp-4);">🎯 Accuracy</h3>
+        {% if total_qs > 0 %}
+        <div style="max-width:180px;margin:0 auto;">
+          <canvas id="accChart"></canvas>
+        </div>
+        <div class="flex justify-between mt-4" style="font-size:var(--fs-sm);">
+          <span style="color:var(--success);font-weight:600;">✓ {{ correct_count }} correct</span>
+          <span style="color:var(--error);font-weight:600;">✗ {{ wrong_count }} wrong</span>
+        </div>
+        {% else %}
+        <p class="text-center text-faint" style="padding:var(--sp-8);">No data yet</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- My Quizzes -->
+    <div class="card anim-slide" style="--i:4;">
+      <div style="padding:var(--sp-5) var(--sp-6);border-bottom:1px solid var(--border-light);">
+        <div class="flex items-center justify-between">
+          <h3 style="font-size:var(--fs-md);margin:0;">🧩 My Quizzes</h3>
+          <a href="{{ url_for('quiz.list_quizzes') }}" style="font-size:var(--fs-sm);font-weight:600;">See all →</a>
+        </div>
+      </div>
+      {% if quizzes %}
+      <div>
+        {% for quiz in quizzes[:5] %}
+        <div
+          style="padding:var(--sp-4) var(--sp-6);border-bottom:1px solid var(--border-light);display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4);transition:background var(--dur);"
+          onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background=''">
+          <div style="flex:1;min-width:0;">
+            <div
+              style="font-weight:700;color:var(--text-primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+              {{ quiz.title }}</div>
+            <div style="font-size:var(--fs-xs);color:var(--text-faint);margin-top:2px;">{{ quiz.questions.count() }}
+              questions</div>
+          </div>
+          {% if quiz.status == 'active' %}<span class="badge badge-success">Active</span>
+          {% elif quiz.status == 'draft' %}<span class="badge badge-neutral">Draft</span>
+          {% elif quiz.status == 'scheduled' %}<span class="badge badge-info">Scheduled</span>
+          {% elif quiz.status == 'suspended' %}<span class="badge badge-danger">Suspended</span>
+          {% else %}<span class="badge badge-neutral">{{ quiz.status }}</span>{% endif %}
+          <span class="badge badge-neutral">{{ attempt_counts.get(quiz.id, 0) }} plays</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center" style="padding:var(--sp-10);color:var(--text-faint);">
+        <p>No quizzes yet. <a href="{{ url_for('quiz.create_quiz') }}" style="font-weight:700;">Create one!</a></p>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Skeleton → real after 1s
+  setTimeout(() => {
+    document.getElementById('skelDash').style.display = 'none';
+    document.getElementById('realDash').style.display = 'block';
+    animateCounters();
+    initCharts();
+  }, 1000);
+
+  // Animated counters
+  function animateCounters() {
+    document.querySelectorAll('[data-count]').forEach(el => {
+      const target = parseInt(el.dataset.count) || 0;
+      if (target === 0) { el.textContent = '0'; return; }
+      let current = 0;
+      const step = Math.max(1, Math.ceil(target / 40));
+      const interval = setInterval(() => {
+        current += step;
+        if (current >= target) { current = target; clearInterval(interval); }
+        el.textContent = current;
+      }, 25);
+    });
+  }
+
+  // Charts
+  function initCharts() {
+    {% if score_values %}
+    const scoreLabels = {{ score_labels | tojson }};
+    const scoreValues = {{ score_values | tojson }};
+
+    const scoreCtx = document.getElementById('scoreChart');
+    if (scoreCtx) {
+      new Chart(scoreCtx, {
+        type: 'bar',
+        data: {
+          labels: scoreLabels,
+          datasets: [{
+            data: scoreValues,
+            backgroundColor: scoreValues.map(v =>
+              v >= 70 ? 'rgba(16,185,129,.6)' :
+              v >= 40 ? 'rgba(245,158,11,.5)' :
+                        'rgba(239,68,68,.5)'
+            ),
+            borderRadius: 8,
+            borderSkipped: false,
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              grid: { color: 'rgba(0,0,0,.04)' },
+              ticks: { font: { size: 11 } }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { font: { size: 11 } }
+            }
+          }
+        }
+      });
+    }
+    {% endif %}
+
+    {% if total_qs > 0 %}
+    const accCtx = document.getElementById('accChart');
+    if (accCtx) {
+      new Chart(accCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Correct', 'Wrong'],
+          datasets: [{
+            data: [{{ correct_count }}, {{ wrong_count }}],
+            backgroundColor: ['rgba(16,185,129,.7)', 'rgba(239,68,68,.5)'],
+            borderWidth: 0,
+          }]
+        },
+        options: {
+          responsive: true,
+          cutout: '70%',
+          plugins: { legend: { display: false } }
+        }
+      });
+    }
+    {% endif %}
+  }
+</script>
+{% endblock %}

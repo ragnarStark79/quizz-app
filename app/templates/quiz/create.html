@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Create Quiz – Quizz{% endblock %}
+
+{% block content %}
+<div class="page-shell" style="max-width:var(--max-w-md);">
+  <div class="page-header anim-fade">
+    <div class="page-header-icon" style="background:linear-gradient(135deg,var(--primary),#8b5cf6);">📝</div>
+    <div>
+      <h1>Create Quiz</h1>
+      <p>Set up the basics for your new quiz.</p>
+    </div>
+    <a href="{{ url_for('quiz.list_quizzes') }}" class="btn btn-secondary" style="margin-left:auto;">← Back</a>
+  </div>
+
+  <div class="alerts">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}{% for cat, msg in messages %}
+    <div class="alert alert-{{ cat }}">{{ msg }}</div>
+    {% endfor %}{% endif %}{% endwith %}
+  </div>
+
+  <div class="glass-card anim-slide">
+    <form method="POST" action="{{ url_for('quiz.create_quiz') }}">
+      <div class="form-group">
+        <label class="form-label" for="title">Quiz Title</label>
+        <input type="text" id="title" name="title" class="form-control" required autofocus
+          placeholder="e.g. Introduction to Python Frameworks">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="description">Description</label>
+        <textarea id="description" name="description" class="form-control" rows="4"
+          placeholder="Briefly describe what this quiz covers…"></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="time_limit">Time Limit <span class="form-hint">(Optional, in
+            minutes)</span></label>
+        <div style="position:relative;">
+          <input type="number" id="time_limit" name="time_limit" class="form-control" min="1"
+            placeholder="Leave empty for unlimited" style="padding-right:3.5rem;">
+          <span
+            style="position:absolute;right:var(--sp-4);top:50%;transform:translateY(-50%);color:var(--text-faint);font-size:var(--fs-sm);font-weight:600;">MIN</span>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block btn-lg mt-4">Create Quiz & Continue →</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

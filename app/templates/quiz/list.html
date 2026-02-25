@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}My Quizzes – Quizz{% endblock %}
+
+{% block content %}
+<div class="page-shell">
+  <div class="page-header anim-fade">
+    <div class="page-header-icon" style="background:linear-gradient(135deg,var(--primary),#8b5cf6);">🧩</div>
+    <div>
+      <h1>My Quizzes</h1>
+      <p>Manage quizzes you've created.</p>
+    </div>
+    <a href="{{ url_for('quiz.create_quiz') }}" class="btn btn-primary" style="margin-left:auto;">+ Create New Quiz</a>
+  </div>
+
+  <div class="alerts">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}{% for cat, msg in messages %}
+    <div class="alert alert-{{ cat }}">{{ msg }}</div>
+    {% endfor %}{% endif %}{% endwith %}
+  </div>
+
+  {% if quizzes %}
+  <div class="grid gap-6" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr));">
+    {% for quiz in quizzes %}
+    <div class="glass-card anim-slide anim-stagger" style="--i:{{ loop.index0 }};">
+      <h3 style="margin:0 0 var(--sp-2);font-size:var(--fs-lg);">{{ quiz.title }}</h3>
+      <p style="font-size:var(--fs-sm);color:var(--text-muted);margin-bottom:var(--sp-4);line-height:1.5;">
+        {{ quiz.description[:100] }}{% if quiz.description|length > 100 %}…{% endif %}
+      </p>
+      <div class="flex items-center justify-between mb-4"
+        style="font-size:var(--fs-xs);color:var(--text-faint);padding-top:var(--sp-3);border-top:1px solid var(--border-light);">
+        <span>
+          {% if quiz.status == 'active' %}<span class="badge badge-success">Active</span>
+          {% elif quiz.status == 'draft' %}<span class="badge badge-neutral">Draft</span>
+          {% elif quiz.status == 'scheduled' %}<span class="badge badge-info">Scheduled</span>
+          {% elif quiz.status == 'suspended' %}<span class="badge badge-danger">Suspended</span>
+          {% else %}<span class="badge badge-neutral">{{ quiz.status|title }}</span>{% endif %}
+        </span>
+        <span>{{ quiz.created_at.strftime('%b %d, %Y') }}</span>
+      </div>
+      {% if quiz.start_time or quiz.end_time %}
+      <div
+        style="font-size:var(--fs-xs);color:var(--text-secondary);margin-bottom:var(--sp-3);background:rgba(0,0,0,.02);padding:var(--sp-2) var(--sp-3);border-radius:var(--radius-sm);">
+        {% if quiz.start_time %}<div>⏳ {{ quiz.start_time.strftime('%b %d, %Y %H:%M') }}</div>{% endif %}
+        {% if quiz.end_time %}<div>⌛ {{ quiz.end_time.strftime('%b %d, %Y %H:%M') }}</div>{% endif %}
+      </div>
+      {% endif %}
+      <div class="flex gap-2">
+        <a href="{{ url_for('quiz.edit_quiz', quiz_id=quiz.id) }}" class="btn btn-secondary btn-sm"
+          style="flex:1;">Edit</a>
+        <form action="{{ url_for('quiz.delete_quiz', quiz_id=quiz.id) }}" method="POST" style="flex:1;"
+          onsubmit="return confirm('Delete this quiz?');">
+          <button type="submit" class="btn btn-danger btn-sm btn-block">Delete</button>
+        </form>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="glass-card text-center anim-fade" style="padding:var(--sp-12);">
+    <div style="font-size:2.5rem;margin-bottom:var(--sp-3);">📝</div>
+    <p class="text-muted mb-6" style="font-size:var(--fs-lg);">You haven't created any quizzes yet.</p>
+    <a href="{{ url_for('quiz.create_quiz') }}" class="btn btn-primary">Create Your First Quiz</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

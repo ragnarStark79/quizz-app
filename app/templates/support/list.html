@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Support Center – Quizz{% endblock %}
+
+{% block content %}
+<div class="page-shell" style="max-width:var(--max-w-lg);">
+  <div class="page-header anim-fade">
+    <div class="page-header-icon" style="background:linear-gradient(135deg,#f59e0b,#ef4444);">💬</div>
+    <div>
+      <h1>Support Center</h1>
+      <p>Need help? Create a ticket and we'll assist you.</p>
+    </div>
+    <a href="{{ url_for('support.new_ticket') }}" class="btn btn-primary" style="margin-left:auto;">+ New Ticket</a>
+  </div>
+
+  <div class="alerts">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}{% for cat, msg in messages %}
+    <div class="alert alert-{{ cat }}">{{ msg }}</div>
+    {% endfor %}{% endif %}{% endwith %}
+  </div>
+
+  {% if tickets %}
+  <div class="flex flex-col gap-3">
+    {% for ticket in tickets %}
+    <a href="{{ url_for('support.view_ticket', ticket_id=ticket.id) }}" style="text-decoration:none;">
+      <div class="glass-card anim-slide anim-stagger"
+        style="--i:{{ loop.index0 }};padding:var(--sp-5);display:flex;align-items:center;justify-content:space-between;gap:var(--sp-4);">
+        <div style="flex:1;min-width:0;">
+          <h3 style="margin:0;font-size:var(--fs-md);color:var(--text-primary);">{{ ticket.subject }}</h3>
+          <p style="margin:var(--sp-1) 0 0;font-size:var(--fs-sm);color:var(--text-faint);">{{
+            ticket.created_at.strftime('%b %d, %Y') }}</p>
+        </div>
+        {% if ticket.status == 'open' %}<span class="badge badge-success">Open</span>
+        {% else %}<span class="badge badge-neutral">Closed</span>{% endif %}
+      </div>
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="glass-card text-center anim-fade" style="padding:var(--sp-12);">
+    <div style="font-size:2.5rem;margin-bottom:var(--sp-3);">💬</div>
+    <h3 style="margin-bottom:var(--sp-2);">No Tickets Yet</h3>
+    <p class="text-muted mb-6">You haven't submitted any support requests.</p>
+    <a href="{{ url_for('support.new_ticket') }}" class="btn btn-primary">Ask for Help</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

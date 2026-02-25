@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard – Quizz{% endblock %}
+
+{% block content %}
+<div class="page-shell" style="max-width:var(--max-w-lg);">
+
+  <!-- Header -->
+  <div class="text-center mb-8 anim-fade">
+    <h1 style="font-size:var(--fs-3xl);margin-bottom:var(--sp-2);">
+      <span
+        style="background:linear-gradient(135deg,#f59e0b,var(--primary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">🏆
+        Leaderboard</span>
+    </h1>
+    <p class="text-muted">Top performers ranked by average accuracy.</p>
+  </div>
+
+  <!-- Skeleton -->
+  <div id="skelLB">
+    {% for i in range(6) %}
+    <div
+      style="display:flex;align-items:center;gap:var(--sp-4);padding:var(--sp-3) 0;border-bottom:1px solid var(--border-light);">
+      <div class="skeleton" style="width:38px;height:38px;border-radius:50%;"></div>
+      <div class="skeleton" style="width:140px;height:14px;"></div>
+      <div class="skeleton" style="width:60px;height:14px;margin-left:auto;"></div>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div id="realLB" style="display:none;">
+    <div class="card">
+      {% if leaderboard %}
+      {% for entry in leaderboard %}
+      <div class="anim-slide anim-stagger"
+        style="--i:{{ loop.index0 }};display:flex;align-items:center;gap:var(--sp-4);padding:var(--sp-4) var(--sp-5);border-bottom:1px solid var(--border-light);transition:background var(--dur);"
+        onmouseover="this.style.background='rgba(99,102,241,.03)'" onmouseout="this.style.background=''">
+        <!-- Rank -->
+        <div style="width:38px;text-align:center;font-size:var(--fs-lg);font-weight:800;flex-shrink:0;">
+          {% if entry.rank == 1 %}🥇{% elif entry.rank == 2 %}🥈{% elif entry.rank == 3 %}🥉
+          {% else %}<span class="text-faint">{{ entry.rank }}</span>{% endif %}
+        </div>
+        <!-- Avatar -->
+        <div class="avatar">{{ entry.user.username[0]|upper }}</div>
+        <!-- Name -->
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:700;color:var(--text-primary);font-size:var(--fs-sm);">{{ entry.user.username }}</div>
+          <div style="font-size:var(--fs-xs);color:var(--text-faint);">Since {{ entry.user.joined_at.strftime('%b %Y')
+            }}</div>
+        </div>
+        <!-- Attempts -->
+        <div style="font-size:var(--fs-xs);color:var(--text-faint);text-align:right;min-width:70px;">{{ entry.total }}
+          attempts</div>
+        <!-- Accuracy -->
+        <div
+          style="font-size:var(--fs-lg);font-weight:800;min-width:58px;text-align:right;color:{% if entry.avg_acc >= 80 %}var(--success){% elif entry.avg_acc >= 50 %}var(--warning){% else %}var(--error){% endif %};">
+          {{ entry.avg_acc }}%
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <div class="text-center" style="padding:var(--sp-12);color:var(--text-faint);">
+        <div style="font-size:2.5rem;margin-bottom:var(--sp-3);">📭</div>
+        <p style="font-weight:600;">No data yet. Start taking quizzes!</p>
+        <a href="{{ url_for('quiz.explore_quizzes') }}" class="btn btn-primary mt-4">Explore Quizzes</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  setTimeout(() => { document.getElementById('skelLB').style.display = 'none'; document.getElementById('realLB').style.display = 'block'; }, 1000);
+</script>
+{% endblock %}
