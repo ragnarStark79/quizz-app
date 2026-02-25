@@ -1,0 +1,352 @@
+{% extends "base.html" %}
+{% block title %}AI Quiz Generator – QuizOasis{% endblock %}
+
+{% block content %}
+<div class="page-shell" style="max-width:var(--max-w-lg);">
+  <div class="page-header anim-fade">
+    <div class="page-header-icon" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);">✨</div>
+    <div>
+      <h1>AI Quiz Generator</h1>
+      <p>Let Gemini create a quiz for you in seconds.</p>
+    </div>
+    <a href="{{ url_for('quiz.list_quizzes') }}" class="btn btn-secondary" style="margin-left:auto;">← Back</a>
+  </div>
+
+  <div class="alerts">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}{% for cat, msg in messages %}
+    <div class="alert alert-{{ cat }}">{{ msg }}</div>
+    {% endfor %}{% endif %}{% endwith %}
+  </div>
+
+  <!-- ── INPUT FORM ── -->
+  <div id="inputSection" class="glass-card anim-slide">
+    <h3 style="margin-bottom:var(--sp-4);font-size:var(--fs-lg);">⚙️ Quiz Configuration</h3>
+    <div class="form-group">
+      <label class="form-label" for="topic">Topic <span style="color:var(--error);">*</span></label>
+      <input type="text" id="topic" class="form-control" required placeholder="e.g. Python Data Structures">
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="ai_description">Description / Context <span
+          class="form-hint">(Optional)</span></label>
+      <textarea id="ai_description" class="form-control" rows="3"
+        placeholder="Any specific focus areas, subtopics, or instructions…"></textarea>
+    </div>
+    <div class="grid grid-3 gap-4">
+      <div class="form-group">
+        <label class="form-label" for="numQuestions">Questions</label>
+        <input type="number" id="numQuestions" class="form-control" min="5" max="50" value="10">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="difficulty">Difficulty</label>
+        <select id="difficulty" class="form-control">
+          <option value="easy">Easy</option>
+          <option value="medium" selected>Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="ai_time_limit">Time Limit</label>
+        <div style="position:relative;">
+          <input type="number" id="ai_time_limit" class="form-control" min="1" placeholder="Optional"
+            style="padding-right:3.5rem;">
+          <span
+            style="position:absolute;right:var(--sp-4);top:50%;transform:translateY(-50%);color:var(--text-faint);font-size:var(--fs-sm);font-weight:600;">MIN</span>
+        </div>
+      </div>
+    </div>
+    <button id="generateBtn" onclick="generateQuiz()" class="btn btn-primary btn-block btn-lg mt-4">
+      ✨ Generate with Gemini
+    </button>
+  </div>
+
+  <!-- ── LOADING STATE ── -->
+  <div id="loadingSection" class="glass-card-static text-center" style="display:none;padding:var(--sp-12) var(--sp-6);">
+    <div class="ai-spinner"></div>
+    <h3 style="margin-top:var(--sp-6);margin-bottom:var(--sp-2);">Generating with Gemini…</h3>
+    <p class="text-muted" style="font-size:var(--fs-sm);">This usually takes 5–15 seconds</p>
+  </div>
+
+  <!-- ── PREVIEW SECTION ── -->
+  <div id="previewSection" style="display:none;">
+    <div class="glass-card-static mb-6 anim-slide" style="padding:var(--sp-4) var(--sp-6);">
+      <div style="display:flex;align-items:center;justify-content:between;gap:var(--sp-4);flex-wrap:wrap;">
+        <div style="flex:1;">
+          <h3 id="previewTitle" style="margin:0;font-size:var(--fs-lg);"></h3>
+          <p id="previewDesc" class="text-muted" style="font-size:var(--fs-sm);margin-top:var(--sp-1);"></p>
+        </div>
+        <span id="questionCount" class="badge badge-primary"></span>
+      </div>
+    </div>
+
+    <div id="questionsContainer"></div>
+
+    <!-- Save Controls -->
+    <div class="glass-card anim-slide mt-6" style="display:flex;gap:var(--sp-3);flex-wrap:wrap;">
+      <button onclick="saveQuiz('draft')" class="btn btn-secondary btn-lg" style="flex:1;">Save as Draft</button>
+      <button onclick="saveQuiz('active')" class="btn btn-primary btn-lg" style="flex:1;">Save & Publish</button>
+    </div>
+
+    <div class="text-center mt-4">
+      <button onclick="resetForm()" class="btn btn-secondary btn-sm">← Generate Another</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+  .ai-spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid var(--border-light);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    margin: 0 auto;
+    animation: spin 0.8s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  .q-card {
+    background: rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: var(--sp-5);
+    margin-bottom: var(--sp-4);
+    animation: fadeSlideUp 0.3s ease forwards;
+    opacity: 0;
+  }
+
+  .q-card .q-num {
+    font-size: var(--fs-xs);
+    font-weight: 700;
+    color: var(--primary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--sp-2);
+  }
+
+  .q-card .q-text {
+    width: 100%;
+    font-size: var(--fs-base);
+    font-weight: 600;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: var(--sp-3);
+    background: rgba(255, 255, 255, 0.5);
+    margin-bottom: var(--sp-3);
+    font-family: var(--font);
+    resize: vertical;
+  }
+
+  .q-card .option-row {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-2);
+    margin-bottom: var(--sp-2);
+  }
+
+  .q-card .option-letter {
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: var(--fs-xs);
+    border: 2px solid var(--border-light);
+    color: var(--text-muted);
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: all var(--dur) var(--ease);
+  }
+
+  .q-card .option-letter.correct {
+    background: var(--success);
+    border-color: var(--success);
+    color: #fff;
+  }
+
+  .q-card .option-input {
+    flex: 1;
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: var(--sp-2) var(--sp-3);
+    font-size: var(--fs-sm);
+    background: rgba(255, 255, 255, 0.5);
+    font-family: var(--font);
+  }
+
+  .q-card .q-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: var(--sp-3);
+    padding-top: var(--sp-3);
+    border-top: 1px solid var(--border-light);
+  }
+
+  .q-card .explanation {
+    font-size: var(--fs-xs);
+    color: var(--text-muted);
+    font-style: italic;
+  }
+
+  .q-card .btn-delete-q {
+    background: none;
+    border: none;
+    color: var(--error);
+    cursor: pointer;
+    font-size: var(--fs-sm);
+    font-weight: 600;
+    padding: var(--sp-1) var(--sp-2);
+    border-radius: var(--radius-md);
+    transition: background var(--dur) var(--ease);
+  }
+
+  .q-card .btn-delete-q:hover {
+    background: var(--error-light);
+  }
+</style>
+
+<script>
+  let generatedQuiz = null;
+
+  async function generateQuiz() {
+    const topic = document.getElementById('topic').value.trim();
+    if (!topic) { alert('Please enter a topic.'); return; }
+
+    const numQuestions = parseInt(document.getElementById('numQuestions').value) || 10;
+    const difficulty = document.getElementById('difficulty').value;
+    const description = document.getElementById('ai_description').value.trim();
+
+    document.getElementById('inputSection').style.display = 'none';
+    document.getElementById('loadingSection').style.display = 'block';
+    document.getElementById('previewSection').style.display = 'none';
+
+    try {
+      const res = await fetch('/quiz/ai-generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic, description, num_questions: numQuestions, difficulty })
+      });
+
+      const data = await res.json();
+      if (!data.success) {
+        throw new Error(data.error || 'Generation failed.');
+      }
+
+      generatedQuiz = data.quiz;
+      renderPreview();
+
+    } catch (err) {
+      alert('Error: ' + err.message);
+      document.getElementById('inputSection').style.display = 'block';
+    } finally {
+      document.getElementById('loadingSection').style.display = 'none';
+    }
+  }
+
+  function renderPreview() {
+    document.getElementById('previewTitle').textContent = generatedQuiz.title;
+    document.getElementById('previewDesc').textContent = generatedQuiz.description || '';
+    document.getElementById('questionCount').textContent = generatedQuiz.questions.length + ' Questions';
+
+    const container = document.getElementById('questionsContainer');
+    container.innerHTML = '';
+
+    generatedQuiz.questions.forEach((q, i) => {
+      const letters = ['A', 'B', 'C', 'D'];
+      const optionsHtml = q.options.map((opt, oi) => `
+      <div class="option-row">
+        <div class="option-letter ${oi === q.correct_index ? 'correct' : ''}"
+             onclick="setCorrect(${i}, ${oi})"
+             id="letter-${i}-${oi}">
+          ${letters[oi]}
+        </div>
+        <input class="option-input" value="${escapeHtml(opt)}"
+               onchange="updateOption(${i}, ${oi}, this.value)">
+      </div>
+    `).join('');
+
+      const card = document.createElement('div');
+      card.className = 'q-card';
+      card.style.animationDelay = `${i * 0.05}s`;
+      card.id = `q-card-${i}`;
+      card.innerHTML = `
+      <div class="q-num">Question ${i + 1}</div>
+      <textarea class="q-text" rows="2"
+        onchange="updateQuestionText(${i}, this.value)">${escapeHtml(q.question)}</textarea>
+      ${optionsHtml}
+      <div class="q-footer">
+        <span class="explanation">${q.explanation ? '💡 ' + escapeHtml(q.explanation) : ''}</span>
+        <button class="btn-delete-q" onclick="deleteQuestion(${i})">🗑 Remove</button>
+      </div>
+    `;
+      container.appendChild(card);
+    });
+
+    document.getElementById('previewSection').style.display = 'block';
+  }
+
+  function updateQuestionText(i, val) { generatedQuiz.questions[i].question = val; }
+  function updateOption(i, oi, val) { generatedQuiz.questions[i].options[oi] = val; }
+  function setCorrect(i, oi) {
+    generatedQuiz.questions[i].correct_index = oi;
+    // Update UI
+    for (let j = 0; j < 4; j++) {
+      const el = document.getElementById(`letter-${i}-${j}`);
+      el.classList.toggle('correct', j === oi);
+    }
+  }
+  function deleteQuestion(i) {
+    generatedQuiz.questions.splice(i, 1);
+    renderPreview();
+  }
+
+  async function saveQuiz(status) {
+    if (!generatedQuiz || generatedQuiz.questions.length === 0) {
+      alert('No questions to save.'); return;
+    }
+
+    const timeLimit = document.getElementById('ai_time_limit').value;
+
+    const res = await fetch('/quiz/ai-save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        quiz: generatedQuiz,
+        status: status,
+        time_limit: timeLimit ? parseInt(timeLimit) : null
+      })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      window.location.href = data.redirect;
+    } else {
+      alert(data.error || 'Failed to save quiz.');
+    }
+  }
+
+  function resetForm() {
+    generatedQuiz = null;
+    document.getElementById('previewSection').style.display = 'none';
+    document.getElementById('inputSection').style.display = 'block';
+  }
+
+  function escapeHtml(text) {
+    const d = document.createElement('div');
+    d.textContent = text;
+    return d.innerHTML;
+  }
+</script>
+{% endblock %}

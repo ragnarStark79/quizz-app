@@ -14,6 +14,7 @@
     <img src="https://img.shields.io/badge/SQLAlchemy-3.1-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=white" alt="SQLAlchemy"/>
     <img src="https://img.shields.io/badge/Firebase-Auth-FFCA28?style=for-the-badge&logo=firebase&logoColor=black" alt="Firebase"/>
     <img src="https://img.shields.io/badge/Chart.js-4.4-FF6384?style=for-the-badge&logo=chartdotjs&logoColor=white" alt="Chart.js"/>
+    <img src="https://img.shields.io/badge/Google%20Gemini-AI-8E75B2?style=for-the-badge&logo=google&logoColor=white" alt="Google Gemini API"/>
   </p>
 </p>
 
@@ -23,6 +24,7 @@
 
 ### 🎮 For Users
 - **Create Quizzes** — Build quizzes with multiple-choice questions, set time limits, categories, and difficulty levels
+- **✨ AI Quiz Generator** — Auto-generate structured quizzes in seconds using the **Google Gemini API** just by entering a topic!
 - **Take Quizzes** — Attempt quizzes from the explore page with a clean, distraction-free quiz interface
 - **Dashboard** — Personal dashboard with animated stat cards, score history charts, and accuracy breakdowns
 - **Leaderboard** — Global leaderboard to compete with other users and track rankings
@@ -31,7 +33,7 @@
 ### 👤 Profile Management
 - **Profile Page** — Dedicated profile page with glassmorphism design and two-column responsive layout
 - **Personal Info** — Update full name, email, and bio with server-side validation
-- **Avatar Upload** — Upload custom profile pictures (JPG, PNG, WebP — max 2MB) with live preview
+- **Avatar Upload** — Upload custom profile pictures (JPG, PNG, WebP) with live preview. **Avatars display globally** across dashboards, leaderboards, quiz explore pages, and admin tables.
 - **Password Change** — Secure password change with current password verification and complexity policy
 - **Profile Completion** — Visual progress bar showing how complete your profile is
 - **Navbar Dropdown** — Profile picture in the navbar with a sleek dropdown menu for quick navigation
@@ -61,7 +63,8 @@
 | **Database**   | [PostgreSQL](https://www.postgresql.org/) via [SQLAlchemy](https://www.sqlalchemy.org/) ORM |
 | **Migrations** | [Flask-Migrate](https://flask-migrate.readthedocs.io/) (Alembic)          |
 | **Auth**       | [Flask-Login](https://flask-login.readthedocs.io/) — Session-based authentication |
-| **Google Auth** | [Firebase Admin SDK](https://firebase.google.com/docs/admin/setup) — Server-side token verification |
+| **Google Auth**| [Firebase Admin SDK](https://firebase.google.com/docs/admin/setup) — Server-side token verification |
+| **AI Engine**  | [Google Gemini API](https://ai.google.dev/) (`google-genai`) — For auto-generating quizzes |
 | **Charts**     | [Chart.js 4.4](https://www.chartjs.org/) — Interactive dashboard charts    |
 | **Frontend**   | HTML5 + Vanilla CSS + JavaScript — Custom glassmorphism design system      |
 
@@ -95,6 +98,7 @@ QuizOasis/
 │   ├── services/              # Business logic layer
 │   │   ├── auth_service.py    #   User registration
 │   │   ├── quiz_service.py    #   Quiz CRUD operations
+│   │   ├── ai_quiz_service.py #   Google Gemini AI integrations
 │   │   ├── attempt_service.py #   Quiz attempt processing
 │   │   ├── activity_service.py#   Activity logging
 │   │   ├── support_service.py #   Support ticket management
@@ -104,7 +108,7 @@ QuizOasis/
 │   │   ├── index.html         #   Landing page
 │   │   ├── auth/              #   Login & register (with Google button)
 │   │   ├── dashboard/         #   User dashboard
-│   │   ├── quiz/              #   Quiz CRUD & explore
+│   │   ├── quiz/              #   Quiz CRUD, explore, & AI Generate template
 │   │   ├── attempt/           #   Quiz attempt interface
 │   │   ├── leaderboard/       #   Leaderboard page
 │   │   ├── support/           #   Support ticket pages
@@ -172,6 +176,9 @@ QuizOasis/
    FIREBASE_API_KEY=your-firebase-api-key
    FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
    FIREBASE_PROJECT_ID=your-project-id
+
+   # Google Gemini AI
+   GEMINI_API_KEY=your_gemini_api_key
    ```
 
 5. **Set up Firebase** *(for Google authentication)*

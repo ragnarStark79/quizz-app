@@ -47,9 +47,15 @@
     {% for reply in ticket.replies %}
     <div class="flex gap-3 anim-slide anim-stagger"
       style="--i:{{ loop.index0 }};{% if reply.user_id != ticket.user_id %}margin-left:var(--sp-8);{% endif %}">
+      {% if reply.user.profile_image %}
+      <img src="{{ url_for('static', filename=reply.user.profile_image) }}" alt="Avatar"
+        class="avatar avatar-sm {% if reply.user.is_admin %}border-success{% endif %}"
+        style="object-fit:cover;flex-shrink:0;">
+      {% else %}
       <div class="avatar avatar-sm {% if reply.user.is_admin %}{% endif %}"
         style="{% if reply.user.is_admin %}background:linear-gradient(135deg,var(--success),#0ea5e9);{% endif %}flex-shrink:0;">
         {{ reply.user.username[0]|upper }}</div>
+      {% endif %}
       <div class="card"
         style="flex:1;padding:var(--sp-4);{% if reply.user.is_admin %}background:rgba(16,185,129,.03);border:1px solid rgba(16,185,129,.1);{% endif %}border-radius:var(--radius-md);">
         <div class="flex items-center justify-between mb-2">

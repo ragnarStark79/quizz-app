@@ -50,7 +50,12 @@
           <tr data-name="{{ user.username|lower }}" data-email="{{ user.email|lower }}">
             <td>
               <div class="flex items-center gap-3">
+                {% if user.profile_image %}
+                <img src="{{ url_for('static', filename=user.profile_image) }}" alt="Avatar" class="avatar avatar-sm"
+                  style="object-fit:cover;">
+                {% else %}
                 <div class="avatar avatar-sm">{{ user.username[0]|upper }}</div>
+                {% endif %}
                 <div>
                   <a href="{{ url_for('admin.user_detail', user_id=user.id) }}"
                     style="font-weight:700;color:var(--primary);">{{ user.username }}</a>

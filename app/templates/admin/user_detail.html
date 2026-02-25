@@ -5,9 +5,14 @@
 <div class="page-shell" style="max-width:var(--max-w-lg);">
 
   <div class="page-header anim-fade">
+    {% if user.profile_image %}
+    <img src="{{ url_for('static', filename=user.profile_image) }}" alt="Avatar" class="avatar avatar-lg"
+      style="width:72px;height:72px;object-fit:cover;{% if user.is_admin %}border:2px solid var(--success);{% endif %}">
+    {% else %}
     <div class="avatar avatar-lg"
       style="width:72px;height:72px;font-size:var(--fs-2xl);{% if user.is_admin %}background:linear-gradient(135deg,var(--success),#0ea5e9);{% endif %}">
       {{ user.username[0]|upper }}</div>
+    {% endif %}
     <div style="flex:1;">
       <h1 style="margin:0;">{{ user.username }}</h1>
       <p style="margin:2px 0 var(--sp-2);font-size:var(--fs-sm);color:var(--text-faint);">{{ user.email }} · Joined {{

@@ -9,7 +9,10 @@
       <h1>My Quizzes</h1>
       <p>Manage quizzes you've created.</p>
     </div>
-    <a href="{{ url_for('quiz.create_quiz') }}" class="btn btn-primary" style="margin-left:auto;">+ Create New Quiz</a>
+    <div style="display:flex;gap:var(--sp-3);margin-left:auto;">
+      <a href="{{ url_for('quiz.ai_generate_page') }}" class="btn btn-secondary">✨ AI Generate</a>
+      <a href="{{ url_for('quiz.create_quiz') }}" class="btn btn-primary">+ Create New Quiz</a>
+    </div>
   </div>
 
   <div class="alerts">

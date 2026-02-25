@@ -18,7 +18,8 @@
       </div>
     </div>
     <div class="grid grid-4 gap-4 mb-8">
-      {% for i in range(4) %}<div class="skeleton" style="height:110px;border-radius:var(--radius-lg);"></div>{% endfor %}
+      {% for i in range(4) %}<div class="skeleton" style="height:110px;border-radius:var(--radius-lg);"></div>{% endfor
+      %}
     </div>
     <div class="grid grid-2 gap-6">
       <div class="skeleton" style="height:260px;border-radius:var(--radius-xl);"></div>
@@ -31,7 +32,12 @@
 
     <!-- Welcome header -->
     <div class="flex items-center gap-4 mb-8 anim-fade" style="flex-wrap:wrap;">
+      {% if current_user.profile_image %}
+      <img src="{{ url_for('static', filename=current_user.profile_image) }}" alt="Avatar" class="avatar avatar-lg"
+        style="object-fit:cover;">
+      {% else %}
       <div class="avatar avatar-lg">{{ current_user.username[0]|upper }}</div>
+      {% endif %}
       <div style="flex:1;">
         <p class="text-muted"
           style="font-size:var(--fs-xs);font-weight:600;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;">
@@ -171,67 +177,68 @@
   // Charts
   function initCharts() {
     {% if score_values %}
-    const scoreLabels = {{ score_labels | tojson }};
-    const scoreValues = {{ score_values | tojson }};
+    const scoreLabels = {{ score_labels | tojson
+  }};
+  const scoreValues = {{ score_values | tojson }};
 
-    const scoreCtx = document.getElementById('scoreChart');
-    if (scoreCtx) {
-      new Chart(scoreCtx, {
-        type: 'bar',
-        data: {
-          labels: scoreLabels,
-          datasets: [{
-            data: scoreValues,
-            backgroundColor: scoreValues.map(v =>
-              v >= 70 ? 'rgba(16,185,129,.6)' :
+  const scoreCtx = document.getElementById('scoreChart');
+  if (scoreCtx) {
+    new Chart(scoreCtx, {
+      type: 'bar',
+      data: {
+        labels: scoreLabels,
+        datasets: [{
+          data: scoreValues,
+          backgroundColor: scoreValues.map(v =>
+            v >= 70 ? 'rgba(16,185,129,.6)' :
               v >= 40 ? 'rgba(245,158,11,.5)' :
-                        'rgba(239,68,68,.5)'
-            ),
-            borderRadius: 8,
-            borderSkipped: false,
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 100,
-              grid: { color: 'rgba(0,0,0,.04)' },
-              ticks: { font: { size: 11 } }
-            },
-            x: {
-              grid: { display: false },
-              ticks: { font: { size: 11 } }
-            }
+                'rgba(239,68,68,.5)'
+          ),
+          borderRadius: 8,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100,
+            grid: { color: 'rgba(0,0,0,.04)' },
+            ticks: { font: { size: 11 } }
+          },
+          x: {
+            grid: { display: false },
+            ticks: { font: { size: 11 } }
           }
         }
-      });
-    }
-    {% endif %}
+      }
+    });
+  }
+  {% endif %}
 
-    {% if total_qs > 0 %}
-    const accCtx = document.getElementById('accChart');
-    if (accCtx) {
-      new Chart(accCtx, {
-        type: 'doughnut',
-        data: {
-          labels: ['Correct', 'Wrong'],
-          datasets: [{
-            data: [{{ correct_count }}, {{ wrong_count }}],
-            backgroundColor: ['rgba(16,185,129,.7)', 'rgba(239,68,68,.5)'],
-            borderWidth: 0,
-          }]
+  {% if total_qs > 0 %}
+  const accCtx = document.getElementById('accChart');
+  if (accCtx) {
+    new Chart(accCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Correct', 'Wrong'],
+        datasets: [{
+          data: [{{ correct_count }}, {{ wrong_count }}],
+      backgroundColor: ['rgba(16,185,129,.7)', 'rgba(239,68,68,.5)'],
+      borderWidth: 0,
+    }]
         },
-        options: {
-          responsive: true,
-          cutout: '70%',
-          plugins: { legend: { display: false } }
-        }
+  options: {
+    responsive: true,
+      cutout: '70%',
+        plugins: { legend: { display: false } }
+  }
       });
     }
-    {% endif %}
+  {% endif %}
   }
 </script>
 {% endblock %}

@@ -66,7 +66,12 @@
       </div>
       <div>
         <div class="flex items-center gap-3 mb-4">
+          {% if quiz.creator.profile_image %}
+          <img src="{{ url_for('static', filename=quiz.creator.profile_image) }}" alt="Avatar" class="avatar avatar-sm"
+            style="object-fit:cover;">
+          {% else %}
           <div class="avatar avatar-sm">{{ quiz.creator.username[0]|upper }}</div>
+          {% endif %}
           <span style="font-size:var(--fs-sm);font-weight:500;color:var(--text-secondary);">{{ quiz.creator.username
             }}</span>
         </div>
@@ -96,12 +101,26 @@
           </div>
           <form action="{{ url_for('attempt.start', quiz_id=quiz.id) }}" method="POST" class="start-form"
             style="display:none;margin-top:var(--sp-3);">
+            {% if current_user.is_authenticated %}
+            <div
+              style="font-size:var(--fs-xs);color:var(--text-muted);text-align:center;margin-bottom:var(--sp-2);font-weight:500;">
+              {% set left = 3 - user_attempts.get(quiz.id, 0) %}
+              {{ left }} attempt{% if left != 1 %}s{% endif %} left
+            </div>
+            {% endif %}
             <button type="submit" class="btn btn-primary btn-block">Start Challenge</button>
           </form>
         </div>
 
         {% else %}
         <form action="{{ url_for('attempt.start', quiz_id=quiz.id) }}" method="POST">
+          {% if current_user.is_authenticated %}
+          <div
+            style="font-size:var(--fs-xs);color:var(--text-muted);text-align:center;margin-bottom:var(--sp-2);font-weight:500;">
+            {% set left = 3 - user_attempts.get(quiz.id, 0) %}
+            {{ left }} attempt{% if left != 1 %}s{% endif %} left
+          </div>
+          {% endif %}
           <button type="submit" class="btn btn-primary btn-block">Start Challenge</button>
         </form>
         {% endif %}
