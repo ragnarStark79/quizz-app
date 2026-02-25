@@ -13,3 +13,4 @@ class Config:
     FIREBASE_API_KEY = os.environ.get('FIREBASE_API_KEY', '')
     FIREBASE_AUTH_DOMAIN = os.environ.get('FIREBASE_AUTH_DOMAIN', '')
     FIREBASE_PROJECT_ID = os.environ.get('FIREBASE_PROJECT_ID', '')
+    GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')

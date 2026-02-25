@@ -72,7 +72,12 @@
         {% for user in users[:5] %}
         <div
           style="padding:var(--sp-3) var(--sp-6);border-bottom:1px solid var(--border-light);display:flex;align-items:center;gap:var(--sp-3);">
+          {% if user.profile_image %}
+          <img src="{{ url_for('static', filename=user.profile_image) }}" alt="Avatar" class="avatar avatar-sm"
+            style="object-fit:cover;">
+          {% else %}
           <div class="avatar avatar-sm">{{ user.username[0]|upper }}</div>
+          {% endif %}
           <div style="flex:1;min-width:0;">
             <div style="font-weight:600;font-size:var(--fs-sm);color:var(--text-primary);">{{ user.username }}</div>
             <div style="font-size:var(--fs-xs);color:var(--text-faint);">{{ user.email }}</div>

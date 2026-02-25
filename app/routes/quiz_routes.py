@@ -1,10 +1,89 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required, current_user
 from app.services.quiz_service import QuizService
+from app.services.ai_quiz_service import AIQuizService
 from app.services.activity_service import ActivityService
 from datetime import datetime
 
 quiz_bp = Blueprint('quiz', __name__)
+
+
+@quiz_bp.route('/quiz/ai-generate', methods=['GET'])
+@login_required
+def ai_generate_page():
+    return render_template('quiz/ai_generate.html')
+
+
+@quiz_bp.route('/quiz/ai-generate', methods=['POST'])
+@login_required
+def ai_generate():
+    """Call Gemini to generate quiz JSON and return it to the frontend."""
+    data = request.get_json(silent=True)
+    if not data or not data.get('topic'):
+        return jsonify({'success': False, 'error': 'Topic is required.'}), 400
+
+    topic = data['topic']
+    description = data.get('description', '')
+    num_questions = min(max(int(data.get('num_questions', 10)), 5), 50)
+    difficulty = data.get('difficulty', 'medium')
+
+    try:
+        quiz_data = AIQuizService.generate_quiz(topic, description, num_questions, difficulty)
+        ActivityService.log_activity(current_user.id, 'AI Generate', f'Generated AI quiz: "{topic}"')
+        return jsonify({'success': True, 'quiz': quiz_data})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@quiz_bp.route('/quiz/ai-save', methods=['POST'])
+@login_required
+def ai_save():
+    """Save AI-generated quiz and questions to the database."""
+    data = request.get_json(silent=True)
+    if not data or not data.get('quiz'):
+        return jsonify({'success': False, 'error': 'No quiz data provided.'}), 400
+
+    quiz_data = data['quiz']
+    status = data.get('status', 'draft')
+    time_limit = data.get('time_limit')
+
+    if not quiz_data.get('questions'):
+        return jsonify({'success': False, 'error': 'Quiz has no questions.'}), 400
+
+    try:
+        quiz = QuizService.create_quiz(
+            user_id=current_user.id,
+            title=quiz_data.get('title', 'AI Generated Quiz'),
+            description=quiz_data.get('description', ''),
+            time_limit=time_limit,
+            status=status
+        )
+
+        letters = ['A', 'B', 'C', 'D']
+        for q in quiz_data['questions']:
+            correct_idx = q.get('correct_index', 0)
+            QuizService.add_question(
+                quiz_id=quiz.id,
+                user_id=current_user.id,
+                question_text=q['question'],
+                options={
+                    'A': q['options'][0],
+                    'B': q['options'][1],
+                    'C': q['options'][2],
+                    'D': q['options'][3],
+                },
+                correct_option=letters[correct_idx]
+            )
+
+        action = 'AI Quiz Published' if status == 'active' else 'AI Quiz Saved'
+        ActivityService.log_activity(current_user.id, action, f'Saved AI quiz: "{quiz.title}"')
+
+        return jsonify({
+            'success': True,
+            'redirect': url_for('quiz.edit_quiz', quiz_id=quiz.id)
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
 
 @quiz_bp.route('/quizzes')
 @login_required
