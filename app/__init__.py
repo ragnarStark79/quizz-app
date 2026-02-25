@@ -60,4 +60,7 @@ def create_app(config_class=Config):
     from app.routes.leaderboard_routes import leaderboard_bp
     app.register_blueprint(leaderboard_bp)
 
+    from app.routes.profile_routes import profile_bp
+    app.register_blueprint(profile_bp)
+
     return app
