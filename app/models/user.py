@@ -14,6 +14,10 @@ class User(UserMixin, db.Model):
     is_suspended = db.Column(db.Boolean, default=False)
     joined_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime)
+    full_name = db.Column(db.String(128), nullable=True)
+    bio = db.Column(db.Text, nullable=True)
+    profile_image = db.Column(db.String(256), nullable=True)
+    updated_at = db.Column(db.DateTime, onupdate=datetime.utcnow)
 
     quizzes = db.relationship('Quiz', backref='creator', lazy='dynamic')
     attempts = db.relationship('Attempt', backref='user', lazy='dynamic')

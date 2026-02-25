@@ -55,3 +55,9 @@ instance/
 *.log
 status_*.txt
 Planning/
+
+# ──────────────────────────────────────
+# User Uploads
+# ──────────────────────────────────────
+app/static/uploads/*
+!app/static/uploads/.gitkeep

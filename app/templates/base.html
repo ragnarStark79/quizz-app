@@ -27,22 +27,46 @@
             <a href="{{ url_for('admin.index') }}">🛡️ Dashboard</a>
             <a href="{{ url_for('admin.users_page') }}">👥 Users</a>
             <a href="{{ url_for('admin.quizzes_page') }}">📝 Quizzes</a>
-            <a href="{{ url_for('admin.tickets_page') }}">🎫 Tickets</a>
-            <a href="{{ url_for('admin.activity_logs') }}">📋 Logs</a>
-            <a href="{{ url_for('auth.logout') }}">Logout</a>
+            <div class="nav-profile">
+                <button class="nav-profile-btn" onclick="toggleProfileDropdown()">
+                    {% if current_user.profile_image %}
+                    <img src="{{ url_for('static', filename=current_user.profile_image) }}" alt="Profile">
+                    {% else %}
+                    <div class="nav-avatar-fallback">{{ current_user.username[0]|upper }}</div>
+                    {% endif %}
+                </button>
+                <div class="nav-profile-dropdown" id="profileDropdown">
+                    <a href="{{ url_for('profile.index') }}">👤 Profile</a>
+                    <a href="{{ url_for('admin.tickets_page') }}">🎫 Tickets</a>
+                    <a href="{{ url_for('admin.activity_logs') }}">📋 Logs</a>
+                    <a href="{{ url_for('auth.logout') }}">Logout</a>
+                </div>
+            </div>
+            {% elif current_user.is_authenticated %}
+            <a href="{{ url_for('quiz.explore_quizzes') }}">Explore</a>
+            <a href="{{ url_for('leaderboard.index') }}">Leaderboard</a>
+            <a href="{{ url_for('quiz.list_quizzes') }}">My Quizzes</a>
+            <a href="{{ url_for('quiz.create_quiz') }}">+ Create Quiz</a>
+            <div class="nav-profile">
+                <button class="nav-profile-btn" onclick="toggleProfileDropdown()">
+                    {% if current_user.profile_image %}
+                    <img src="{{ url_for('static', filename=current_user.profile_image) }}" alt="Profile">
+                    {% else %}
+                    <div class="nav-avatar-fallback">{{ current_user.username[0]|upper }}</div>
+                    {% endif %}
+                </button>
+                <div class="nav-profile-dropdown" id="profileDropdown2">
+                    <a href="{{ url_for('profile.index') }}">👤 Profile</a>
+                    <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
+                    <a href="{{ url_for('support.list_tickets') }}">Support</a>
+                    <a href="{{ url_for('auth.logout') }}">Logout</a>
+                </div>
+            </div>
             {% else %}
             <a href="{{ url_for('quiz.explore_quizzes') }}">Explore</a>
             <a href="{{ url_for('leaderboard.index') }}">Leaderboard</a>
-            {% if current_user.is_authenticated %}
-            <a href="{{ url_for('dashboard.index') }}">Dashboard</a>
-            <a href="{{ url_for('quiz.list_quizzes') }}">My Quizzes</a>
-            <a href="{{ url_for('quiz.create_quiz') }}">+ Create Quiz</a>
-            <a href="{{ url_for('support.list_tickets') }}">Support</a>
-            <a href="{{ url_for('auth.logout') }}">Logout</a>
-            {% else %}
             <a href="{{ url_for('auth.login') }}">Login</a>
             <a href="{{ url_for('auth.register') }}">Register</a>
-            {% endif %}
             {% endif %}
         </div>
     </nav>
@@ -97,6 +121,25 @@
             document.getElementById('navToggle').classList.toggle('active');
             document.getElementById('navOverlay').classList.toggle('show');
             document.body.style.overflow = document.getElementById('navLinks').classList.contains('open') ? 'hidden' : '';
+        }
+
+        function toggleProfileDropdown() {
+            var dropdowns = document.getElementsByClassName("nav-profile-dropdown");
+            for (var i = 0; i < dropdowns.length; i++) {
+                dropdowns[i].classList.toggle('show');
+            }
+        }
+
+        window.onclick = function (event) {
+            if (!event.target.closest('.nav-profile')) {
+                var dropdowns = document.getElementsByClassName("nav-profile-dropdown");
+                for (var i = 0; i < dropdowns.length; i++) {
+                    var openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
         }
     </script>
     {% block scripts %}{% endblock %}
