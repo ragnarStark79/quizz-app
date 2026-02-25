@@ -37,9 +37,10 @@ def ai_generate():
     try:
         quiz_data = AIQuizService.generate_quiz(topic, description, num_questions, difficulty)
         model_used = quiz_data.pop('model_used', 'unknown')
-        _, new_remaining = AIQuizService.get_daily_usage(current_user.id)
+        # Log activity FIRST, then query usage so remaining is accurate
         ActivityService.log_activity(current_user.id, 'AI Generate', f'Generated AI quiz: "{topic}" (model: {model_used})')
-        return jsonify({'success': True, 'quiz': quiz_data, 'model_used': model_used, 'ai_remaining': new_remaining - 1})
+        _, new_remaining = AIQuizService.get_daily_usage(current_user.id)
+        return jsonify({'success': True, 'quiz': quiz_data, 'model_used': model_used, 'ai_remaining': new_remaining})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
@@ -65,7 +66,8 @@ def ai_save():
             title=quiz_data.get('title', 'AI Generated Quiz'),
             description=quiz_data.get('description', ''),
             time_limit=time_limit,
-            status=status
+            status=status,
+            is_ai_generated=True
         )
 
         letters = ['A', 'B', 'C', 'D']

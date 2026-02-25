@@ -14,6 +14,7 @@ class Quiz(db.Model):
     end_time = db.Column(db.DateTime)
     suspension_reason = db.Column(db.String(255))
     suspension_end = db.Column(db.DateTime)
+    is_ai_generated = db.Column(db.Boolean, default=False, server_default='0')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
