@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, current_app
 from flask_login import login_required, current_user
 from app.services.quiz_service import QuizService
 from app.services.ai_quiz_service import AIQuizService
@@ -11,7 +11,9 @@ quiz_bp = Blueprint('quiz', __name__)
 @quiz_bp.route('/quiz/ai-generate', methods=['GET'])
 @login_required
 def ai_generate_page():
-    return render_template('quiz/ai_generate.html')
+    _, ai_remaining = AIQuizService.get_daily_usage(current_user.id)
+    ai_limit = current_app.config.get('AI_DAILY_LIMIT', 6)
+    return render_template('quiz/ai_generate.html', ai_remaining=ai_remaining, ai_limit=ai_limit)
 
 
 @quiz_bp.route('/quiz/ai-generate', methods=['POST'])
@@ -27,11 +29,17 @@ def ai_generate():
     num_questions = min(max(int(data.get('num_questions', 10)), 5), 50)
     difficulty = data.get('difficulty', 'medium')
 
+    # Enforce daily limit
+    _, ai_remaining = AIQuizService.get_daily_usage(current_user.id)
+    if ai_remaining <= 0:
+        return jsonify({'success': False, 'error': 'Daily AI generation limit reached (6/day). Try again tomorrow!'}), 429
+
     try:
         quiz_data = AIQuizService.generate_quiz(topic, description, num_questions, difficulty)
         model_used = quiz_data.pop('model_used', 'unknown')
+        _, new_remaining = AIQuizService.get_daily_usage(current_user.id)
         ActivityService.log_activity(current_user.id, 'AI Generate', f'Generated AI quiz: "{topic}" (model: {model_used})')
-        return jsonify({'success': True, 'quiz': quiz_data, 'model_used': model_used})
+        return jsonify({'success': True, 'quiz': quiz_data, 'model_used': model_used, 'ai_remaining': new_remaining - 1})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
@@ -90,7 +98,9 @@ def ai_save():
 @login_required
 def list_quizzes():
     quizzes = QuizService.get_user_quizzes(current_user.id)
-    return render_template('quiz/list.html', quizzes=quizzes)
+    _, ai_remaining = AIQuizService.get_daily_usage(current_user.id)
+    ai_limit = current_app.config.get('AI_DAILY_LIMIT', 6)
+    return render_template('quiz/list.html', quizzes=quizzes, ai_remaining=ai_remaining, ai_limit=ai_limit)
 
 @quiz_bp.route('/explore')
 def explore_quizzes():

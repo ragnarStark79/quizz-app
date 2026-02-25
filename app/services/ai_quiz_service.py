@@ -322,3 +322,28 @@ Rules:
     @staticmethod
     def get_cooldowns() -> dict[str, datetime]:
         return _selector.get_cooldowns()
+
+    # ── Daily usage tracking per user ────────────────────────────
+
+    @staticmethod
+    def get_daily_usage(user_id: int) -> tuple[int, int]:
+        """
+        Return (used_today, remaining) for the given user.
+        Counts 'AI Generate' activity logs created today.
+        """
+        from app.models.activity import Activity
+        from app import db
+        from datetime import date
+        from flask import current_app
+
+        today = date.today()
+        limit = current_app.config.get('AI_DAILY_LIMIT', 6)
+
+        used = Activity.query.filter(
+            Activity.user_id == user_id,
+            Activity.action_type == 'AI Generate',
+            db.func.date(Activity.timestamp) == today,
+        ).count()
+
+        remaining = max(0, limit - used)
+        return used, remaining

@@ -24,3 +24,4 @@ class Config:
     GEMINI_MAX_RETRIES = 3
     GEMINI_TIMEOUT = 60          # seconds per API call
     GEMINI_COOLDOWN_MINUTES = 5  # cooldown after rate-limit hit
+    AI_DAILY_LIMIT = 6           # max AI generations per user per day
