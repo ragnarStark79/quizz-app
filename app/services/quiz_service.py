@@ -5,13 +5,14 @@ from datetime import datetime
 
 class QuizService:
     @staticmethod
-    def create_quiz(user_id, title, description, time_limit=None, status='draft'):
+    def create_quiz(user_id, title, description, time_limit=None, status='draft', is_ai_generated=False):
         quiz = Quiz(
             title=title,
             description=description,
             creator_id=user_id,
             time_limit=time_limit,
-            status=status
+            status=status,
+            is_ai_generated=is_ai_generated
         )
         db.session.add(quiz)
         db.session.commit()

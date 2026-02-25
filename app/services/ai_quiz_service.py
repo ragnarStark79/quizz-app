@@ -333,16 +333,16 @@ Rules:
         """
         from app.models.activity import Activity
         from app import db
-        from datetime import date
+        from datetime import datetime
         from flask import current_app
 
-        today = date.today()
+        today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
         limit = current_app.config.get('AI_DAILY_LIMIT', 6)
 
         used = Activity.query.filter(
             Activity.user_id == user_id,
             Activity.action_type == 'AI Generate',
-            db.func.date(Activity.timestamp) == today,
+            Activity.timestamp >= today_start
         ).count()
 
         remaining = max(0, limit - used)
