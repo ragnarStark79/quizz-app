@@ -29,8 +29,9 @@ def ai_generate():
 
     try:
         quiz_data = AIQuizService.generate_quiz(topic, description, num_questions, difficulty)
-        ActivityService.log_activity(current_user.id, 'AI Generate', f'Generated AI quiz: "{topic}"')
-        return jsonify({'success': True, 'quiz': quiz_data})
+        model_used = quiz_data.pop('model_used', 'unknown')
+        ActivityService.log_activity(current_user.id, 'AI Generate', f'Generated AI quiz: "{topic}" (model: {model_used})')
+        return jsonify({'success': True, 'quiz': quiz_data, 'model_used': model_used})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
