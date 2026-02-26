@@ -42,13 +42,15 @@
 - **Navbar Dropdown** — Profile picture in the navbar with a sleek dropdown menu for quick navigation
 
 ### 🔐 Authentication
-- **Email/Password Login** — Traditional registration and login with secure password hashing
-- **Google Sign-In** — One-click Google authentication via Firebase with server-side token verification
+- **Google Sign-In First** — Application defaults to Google-Only authentication via Firebase
+- **Email Auth Maintenance Mode** — Feature-flagged system to disable public email registration/login to prevent bots
+- **Email/Password Login** — Secure password hashing available when `AUTH_EMAIL_ENABLED=true`
 - **Account Linking** — Existing email users can link their Google account seamlessly
 - **OAuth Protection** — Google users are prevented from changing passwords (no password set)
 - **Suspended User Blocking** — Suspended accounts are blocked at login for both auth methods
 
 ### 🛡️ For Admins
+- **Email Bypass** — Admins can bypass the Email Auth Maintenance mode and log in via email anytime
 - **Admin Dashboard** — Overview of platform stats, user activity, and system health
 - **User Management** — View, activate, suspend, or manage all registered users
 - **Quiz Management** — Monitor, review, and moderate quizzes across the platform
@@ -206,6 +208,11 @@ QuizOasis/
    # For Vercel deployments, the app automatically detects and uses:
    # POSTGRES_URL_NON_POOLING or POSTGRES_URL
 
+   # Auth Mode
+   # Set to "true" to allow public email login/register.
+   # Leave blank or "false" to force Google-Only mode (Admins bypass this).
+   AUTH_EMAIL_ENABLED=false
+
    # Flask
    SECRET_KEY=your-secret-key-here
    FLASK_APP=run.py
@@ -266,8 +273,9 @@ QuizOasis is fully optimized for **Vercel** serverless deployments.
 
 All AI and app configuration is centralized in `app/config.py`:
 
-| Setting | Default | Description |
+| Settings | Default | Description |
 |---------|---------|-------------|
+| `AUTH_EMAIL_ENABLED` | `false` | Enables public email/password auth. If false, UI shows maintenance banners and enforces Google-Only auth (except for Admins). |
 | `AI_DAILY_LIMIT` | `10` | Maximum AI quiz generations per user per day |
 | `GEMINI_MODELS` | `['gemini-2.5-flash', ...]` | Model priority list for fallback |
 | `GEMINI_FALLBACK_ENABLED` | `True` | Enable multi-model fallback on failure |
