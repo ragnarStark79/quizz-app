@@ -55,3 +55,6 @@ class Config:
     GEMINI_TIMEOUT = 60          # seconds per API call
     GEMINI_COOLDOWN_MINUTES = 5  # cooldown after rate-limit hit
     AI_DAILY_LIMIT = 10          # max AI generations per user per day
+    
+    # Authentication mode: must be set via environment variable (no hardcoded default)
+    AUTH_EMAIL_ENABLED = os.environ.get('AUTH_EMAIL_ENABLED', '').lower() == 'true'
