@@ -17,28 +17,7 @@
       {% endfor %}{% endif %}{% endwith %}
     </div>
 
-    <form method="POST" action="{{ url_for('auth.login') }}">
-      <div class="form-group">
-        <label class="form-label" for="email">Email</label>
-        <input type="email" id="email" name="email" class="form-control" required autofocus
-          placeholder="you@example.com">
-      </div>
-      <div class="form-group">
-        <label class="form-label" for="password">Password</label>
-        <input type="password" id="password" name="password" class="form-control" required placeholder="••••••••">
-      </div>
-      <button type="submit" class="btn btn-primary btn-block btn-lg">Sign In</button>
-    </form>
-
-    <!-- Divider -->
-    <div style="display:flex;align-items:center;gap:var(--sp-3);margin:var(--sp-5) 0;">
-      <div style="flex:1;height:1px;background:var(--border-light);"></div>
-      <span style="font-size:var(--fs-xs);color:var(--text-faint);font-weight:500;white-space:nowrap;">or continue
-        with</span>
-      <div style="flex:1;height:1px;background:var(--border-light);"></div>
-    </div>
-
-    <!-- Google Sign In Button -->
+    <!-- Google Sign In Button (always enabled) -->
     <button id="googleSignInBtn" onclick="signInWithGoogle()" class="btn btn-block btn-lg"
       style="background:#fff;color:#1f1f1f;border:1.5px solid var(--border-light);font-weight:600;display:flex;align-items:center;justify-content:center;gap:var(--sp-3);transition:all var(--dur) var(--ease);"
       onmouseover="this.style.borderColor='var(--primary)';this.style.boxShadow='0 2px 12px rgba(99,102,241,.12)';"
@@ -55,6 +34,39 @@
       <span id="googleBtnText">Sign in with Google</span>
     </button>
 
+    <!-- Divider -->
+    <div style="display:flex;align-items:center;gap:var(--sp-3);margin:var(--sp-5) 0;">
+      <div style="flex:1;height:1px;background:var(--border-light);"></div>
+      <span style="font-size:var(--fs-xs);color:var(--text-faint);font-weight:500;white-space:nowrap;">or sign in with
+        email</span>
+      <div style="flex:1;height:1px;background:var(--border-light);"></div>
+    </div>
+
+    {% if not email_auth_enabled %}
+    <!-- Maintenance Info Banner -->
+    <div
+      style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:1px solid #f59e0b;border-radius:var(--radius);padding:var(--sp-4);margin-bottom:var(--sp-4);text-align:center;">
+      <div style="font-size:1.3rem;margin-bottom:var(--sp-1);">🔒</div>
+      <p style="font-size:var(--fs-sm);font-weight:600;color:#92400e;margin:0 0 var(--sp-1);">Only authorized personnel
+        can sign in with email right now</p>
+      <p style="font-size:var(--fs-xs);color:#a16207;margin:0;">User email login will be available soon with email
+        verification feature. Please use Google Sign-In for now.</p>
+    </div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('auth.login') }}" id="emailLoginForm">
+      <div class="form-group">
+        <label class="form-label" for="email">Email</label>
+        <input type="email" id="email" name="email" class="form-control" required autofocus
+          placeholder="you@example.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input type="password" id="password" name="password" class="form-control" required placeholder="••••••••">
+      </div>
+      <button type="submit" class="btn btn-primary btn-block btn-lg">Sign In</button>
+    </form>
+
     <p class="text-center mt-6" style="font-size:var(--fs-sm);color:var(--text-muted);">
       Don't have an account? <a href="{{ url_for('auth.register') }}" style="font-weight:700;">Create one</a>
     </p>
@@ -66,7 +78,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script>
-  // Firebase config — replace with your project values
   const firebaseConfig = {
     apiKey: "{{ config.get('FIREBASE_API_KEY', '') }}",
     authDomain: "{{ config.get('FIREBASE_AUTH_DOMAIN', '') }}",

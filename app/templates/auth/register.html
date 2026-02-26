@@ -17,7 +17,7 @@
       {% endfor %}{% endif %}{% endwith %}
     </div>
 
-    <!-- Google Sign Up Button -->
+    <!-- Google Sign Up Button (always enabled) -->
     <button id="googleSignUpBtn" onclick="signUpWithGoogle()" class="btn btn-block btn-lg mb-4"
       style="background:#fff;color:#1f1f1f;border:1.5px solid var(--border-light);font-weight:600;display:flex;align-items:center;justify-content:center;gap:var(--sp-3);transition:all var(--dur) var(--ease);"
       onmouseover="this.style.borderColor='var(--primary)';this.style.boxShadow='0 2px 12px rgba(99,102,241,.12)';"
@@ -42,20 +42,39 @@
       <div style="flex:1;height:1px;background:var(--border-light);"></div>
     </div>
 
-    <form method="POST" action="{{ url_for('auth.register') }}">
+    {% if not email_auth_enabled %}
+    <!-- Maintenance Banner -->
+    <div
+      style="background:linear-gradient(135deg,#fef3c7,#fde68a);border:1px solid #f59e0b;border-radius:var(--radius);padding:var(--sp-4);margin-bottom:var(--sp-4);text-align:center;">
+      <div style="font-size:1.3rem;margin-bottom:var(--sp-1);">🔒</div>
+      <p style="font-size:var(--fs-sm);font-weight:600;color:#92400e;margin:0 0 var(--sp-1);">Email registration is
+        under maintenance</p>
+      <p style="font-size:var(--fs-xs);color:#a16207;margin:0;">Will be available soon with email verification feature.
+        Please use Google Sign-Up for now.</p>
+    </div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('auth.register') }}" id="emailRegisterForm">
       <div class="form-group">
         <label class="form-label" for="username">Username</label>
-        <input type="text" id="username" name="username" class="form-control" required autofocus placeholder="johndoe">
+        <input type="text" id="username" name="username" class="form-control" required autofocus placeholder="johndoe"
+          {% if not email_auth_enabled %}disabled style="opacity:0.5;cursor:not-allowed;" {% endif %}>
       </div>
       <div class="form-group">
         <label class="form-label" for="email">Email</label>
-        <input type="email" id="email" name="email" class="form-control" required placeholder="you@example.com">
+        <input type="email" id="email" name="email" class="form-control" required placeholder="you@example.com" {% if
+          not email_auth_enabled %}disabled style="opacity:0.5;cursor:not-allowed;" {% endif %}>
       </div>
       <div class="form-group">
         <label class="form-label" for="password">Password</label>
-        <input type="password" id="password" name="password" class="form-control" required placeholder="••••••••">
+        <input type="password" id="password" name="password" class="form-control" required placeholder="••••••••" {% if
+          not email_auth_enabled %}disabled style="opacity:0.5;cursor:not-allowed;" {% endif %}>
       </div>
-      <button type="submit" class="btn btn-primary btn-block btn-lg">Create Account</button>
+      <button type="submit" id="emailRegisterBtn" class="btn btn-primary btn-block btn-lg" {% if not email_auth_enabled
+        %}disabled style="opacity:0.5;cursor:not-allowed;" title="Email registration is disabled. Use Google Sign-Up."
+        {% endif %}>
+        {% if not email_auth_enabled %}🔒 Registration Disabled{% else %}Create Account{% endif %}
+      </button>
     </form>
 
     <p class="text-center mt-6" style="font-size:var(--fs-sm);color:var(--text-muted);">
@@ -75,6 +94,14 @@
     projectId: "{{ config.get('FIREBASE_PROJECT_ID', '') }}",
   };
   firebase.initializeApp(firebaseConfig);
+
+  // Block email form submission if disabled
+  {% if not email_auth_enabled %}
+  document.getElementById('emailRegisterForm').addEventListener('submit', function (e) {
+    e.preventDefault();
+    alert('Email registration is currently disabled. Please use Google Sign-Up.');
+  });
+  {% endif %}
 
   async function signUpWithGoogle() {
     const btn = document.getElementById('googleSignUpBtn');

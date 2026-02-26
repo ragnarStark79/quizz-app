@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
+from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify, current_app
 from flask_login import login_user, logout_user, login_required, current_user
 from urllib.parse import urlparse
 from datetime import datetime
@@ -15,6 +15,8 @@ auth_bp = Blueprint('auth', __name__)
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard.index'))
+    
+    email_auth_enabled = current_app.config.get('AUTH_EMAIL_ENABLED', True)
         
     if request.method == 'POST':
         email = request.form.get('email')
@@ -23,6 +25,11 @@ def login():
         user = User.query.filter_by(email=email).first()
         if user is None or not check_password_hash(user.password_hash, password):
             flash('Invalid email or password', 'error')
+            return redirect(url_for('auth.login'))
+        
+        # Block non-admin email login when email auth is disabled
+        if not email_auth_enabled and not user.is_admin:
+            flash('Email login is temporarily under maintenance. Please use Google Sign-In.', 'error')
             return redirect(url_for('auth.login'))
             
         if user.is_suspended:
@@ -39,7 +46,7 @@ def login():
             next_page = url_for('dashboard.index')
         return redirect(next_page)
         
-    return render_template('auth/login.html')
+    return render_template('auth/login.html', email_auth_enabled=email_auth_enabled)
 
 
 @auth_bp.route('/google-login', methods=['POST'])
@@ -107,8 +114,15 @@ def google_login():
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard.index'))
+    
+    email_auth_enabled = current_app.config.get('AUTH_EMAIL_ENABLED', True)
         
     if request.method == 'POST':
+        # Block all email registration when email auth is disabled
+        if not email_auth_enabled:
+            flash('Email registration is currently disabled. Please use Google Sign-Up.', 'error')
+            return redirect(url_for('auth.register'))
+        
         username = request.form.get('username')
         email = request.form.get('email')
         password = request.form.get('password')
@@ -131,7 +145,7 @@ def register():
             flash(error, 'error')
             return redirect(url_for('auth.register'))
         
-    return render_template('auth/register.html')
+    return render_template('auth/register.html', email_auth_enabled=email_auth_enabled)
 
 @auth_bp.route('/logout')
 @login_required
