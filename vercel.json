@@ -1,4 +1,7 @@
 {
+  "env": {
+    "VERCEL": "1"
+  },
   "builds": [
     {
       "src": "wsgi.py",

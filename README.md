@@ -13,6 +13,7 @@
     <img src="https://img.shields.io/badge/PostgreSQL-16-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL"/>
     <img src="https://img.shields.io/badge/SQLAlchemy-3.1-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=white" alt="SQLAlchemy"/>
     <img src="https://img.shields.io/badge/Firebase-Auth-FFCA28?style=for-the-badge&logo=firebase&logoColor=black" alt="Firebase"/>
+    <img src="https://img.shields.io/badge/Vercel-Deployed-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel"/>
     <img src="https://img.shields.io/badge/Chart.js-4.4-FF6384?style=for-the-badge&logo=chartdotjs&logoColor=white" alt="Chart.js"/>
     <img src="https://img.shields.io/badge/Google%20Gemini-AI-8E75B2?style=for-the-badge&logo=google&logoColor=white" alt="Google Gemini API"/>
   </p>
@@ -199,8 +200,11 @@ QuizOasis/
 
    Create a `.env` file in the root directory:
    ```env
-   # Database
+   # Database (Local or Remote)
    SQLALCHEMY_DATABASE_URI=postgresql+psycopg://localhost/quizz_db
+   
+   # For Vercel deployments, the app automatically detects and uses:
+   # POSTGRES_URL_NON_POOLING or POSTGRES_URL
 
    # Flask
    SECRET_KEY=your-secret-key-here
@@ -241,6 +245,19 @@ QuizOasis/
 9. **Open in browser**
    ```
    http://127.0.0.1:5000
+   ```
+
+### ☁️ Vercel Deployment
+
+QuizOasis is fully optimized for **Vercel** serverless deployments.
+
+1. Install the Vercel CLI: `npm i -g vercel`
+2. Link your Vercel project and provision a **Vercel Postgres** database.
+3. The application automatically detects Vercel's `POSTGRES_URL_NON_POOLING` and configures SQLAlchemy with `NullPool` to prevent connection exhaustion in serverless environments.
+4. It also automatically formats `postgres://` connection strings to `postgresql+psycopg://` for compatibility.
+5. Deploy with a single command:
+   ```bash
+   vercel --prod
    ```
 
 ---
